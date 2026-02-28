@@ -610,9 +610,13 @@
     <div class="nav-inner">
         <a href="#" class="nav-logo">AIR <span>Blackbox</span></a>
         <div class="nav-links">
+            <a href="/gate.html">Gate</a>
+            <a href="#mcp">MCP</a>
+            <a href="#openclaw">OpenClaw</a>
             <a href="#features">Features</a>
             <a href="#frameworks">Frameworks</a>
             <a href="#compliance">Compliance</a>
+            <a href="/compliance-mapping.html">Mapping</a>
             <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
             <a href="#cta" class="nav-cta">Get Started</a>
         </div>
@@ -701,7 +705,7 @@
     <div class="container">
         <div class="stats-grid">
             <div>
-                <div class="stat-num">7</div>
+                <div class="stat-num">9</div>
                 <div class="stat-label">PyPI Packages</div>
             </div>
             <div>
@@ -811,10 +815,10 @@
                 <div class="fw-pkg">Scanner</div>
                 <div class="fw-install">pip install air-compliance</div>
             </div>
-            <div class="fw-card">
-                <div class="fw-name">Gateway</div>
-                <div class="fw-pkg">Any HTTP agent</div>
-                <div class="fw-install">docker pull ghcr.io/airblackbox/gateway</div>
+            <div class="fw-card" style="border-color: var(--accent); background: rgba(249, 115, 22, 0.03);">
+                <div class="fw-name">MCP Server</div>
+                <div class="fw-pkg">Claude Desktop / Cursor</div>
+                <div class="fw-install">pip install air-blackbox-mcp</div>
             </div>
         </div>
     </div>
@@ -937,11 +941,102 @@
     </div>
 </section>
 
+<!-- MCP Server -->
+<section id="mcp" style="border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-card);">
+    <div class="container">
+        <div class="features-header">
+            <h2>Now in Claude Desktop & Cursor</h2>
+            <p>10 compliance tools — directly in your AI coding assistant. Scan, analyze, and fix without leaving the editor.</p>
+        </div>
+        <div class="scanner-block" style="max-width: 700px;">
+            <div class="scanner-label">Install the MCP Server</div>
+            <div class="scanner-cmd" onclick="copyMcp(this)">
+                <span>$ pip install air-blackbox-mcp</span>
+                <button class="copy-btn">Copy</button>
+            </div>
+            <div class="scanner-hint">Then add to Claude Desktop config and restart. <a href="https://github.com/airblackbox/air-blackbox-mcp#quick-start" target="_blank" style="color: var(--accent);">Setup guide &rarr;</a></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 700px; margin: 32px auto 0;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">SCANNING</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">scan_code &middot; scan_file &middot; scan_project</div>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">ANALYSIS</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">analyze_with_model &middot; check_prompt_injection &middot; classify_risk</div>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">REMEDIATION</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">add_trust_layer &middot; suggest_fix</div>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">DOCUMENTATION</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">explain_article &middot; generate_compliance_report</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 32px;">
+            <a href="https://github.com/airblackbox/air-blackbox-mcp" target="_blank" class="btn btn-secondary" style="font-size: 14px;">View on GitHub &rarr;</a>
+            <a href="https://pypi.org/project/air-blackbox-mcp/" target="_blank" class="btn btn-secondary" style="font-size: 14px; margin-left: 12px;">View on PyPI &rarr;</a>
+        </div>
+    </div>
+</section>
+
+<!-- OpenClaw Plugin -->
+<section class="features-section" id="openclaw" style="padding: 80px 0;">
+    <div class="container">
+        <div class="features-header">
+            <h2>Now in OpenClaw</h2>
+            <p>The only EU AI Act compliance plugin for the world's most popular autonomous AI agent. 210K+ GitHub stars. Zero compliance — until now.</p>
+        </div>
+        <div class="scanner-block" style="max-width: 700px;">
+            <div class="scanner-label" style="color: var(--green);">OpenClaw Plugin</div>
+            <div class="scanner-cmd" id="openclaw-cmd">npm install openclaw-air-trust</div>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install openclaw-air-trust');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 700px; margin: 32px auto 0;">
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">AUDIT</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">HMAC-SHA256 tamper-evident chain of every agent action</div>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">CONSENT</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">Human approval gates for destructive tool calls</div>
+            </div>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">PROTECT</div>
+                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">Injection detection &middot; PII tokenization &middot; Risk scoring</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 32px;">
+            <a href="https://github.com/airblackbox/openclaw-air-trust" target="_blank" class="btn btn-secondary" style="font-size: 14px;">View on GitHub &rarr;</a>
+            <a href="https://www.npmjs.com/package/openclaw-air-trust" target="_blank" class="btn btn-secondary" style="font-size: 14px; margin-left: 12px;">View on npm &rarr;</a>
+        </div>
+    </div>
+</section>
+
 <!-- CTA -->
 <section class="cta-section" id="cta">
     <div class="container">
         <h2>5 months left</h2>
         <p>The code changes to get compliant are small. The risk of not making them is not.</p>
+
+        <!-- Email capture -->
+        <div id="waitlist-form" style="max-width: 480px; margin: 32px auto;">
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">Get notified when we ship new compliance tools, framework integrations, and the Hugging Face model.</p>
+            <form action="https://formspree.io/f/xpwzgvkl" method="POST" style="display: flex; gap: 8px;" id="email-form">
+                <input type="email" name="email" placeholder="your@email.com" required
+                    style="flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 14px; font-family: Inter, sans-serif; outline: none;"
+                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+                <input type="hidden" name="_subject" value="AIR Blackbox — New Signup" />
+                <button type="submit"
+                    style="padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-weight: 600; font-size: 14px; cursor: pointer; font-family: Inter, sans-serif; white-space: nowrap;"
+                    onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">
+                    Notify Me
+                </button>
+            </form>
+            <p id="form-success" style="display: none; font-size: 13px; color: var(--green); margin-top: 8px;">You're on the list. We'll keep you posted.</p>
+        </div>
+
         <div class="cta-buttons">
             <a href="https://github.com/airblackbox" target="_blank" class="btn btn-primary">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
@@ -987,6 +1082,15 @@
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
+    // Copy MCP command
+    function copyMcp(el) {
+        navigator.clipboard.writeText('pip install air-blackbox-mcp').then(() => {
+            const btn = el.querySelector('.copy-btn');
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+    }
+
     // Copy scanner command
     function copyCmd(el) {
         const text = 'pip install air-compliance && air-compliance scan ./my-project';
@@ -1005,6 +1109,17 @@
         event.target.classList.add('active');
     }
 
+    // Email form
+    const emailForm = document.getElementById('email-form');
+    if (emailForm) {
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = new FormData(emailForm);
+            fetch(emailForm.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } })
+                .then(r => { if (r.ok) { emailForm.style.display = 'none'; document.getElementById('form-success').style.display = 'block'; } });
+        });
+    }
+
     // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', e => {
@@ -1015,5 +1130,9 @@
     });
 </script>
 
+<!-- Vercel Web Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
+<!-- Vercel Speed Insights -->
+<script defer src="/_vercel/speed-insights/script.js"></script>
 </body>
 </html>

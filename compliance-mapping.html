@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Mapping — AIR Blackbox</title>
+    <meta name="description" content="Technical mapping of EU AI Act articles to ISO 42001 and NIST AI RMF frameworks.">
+    <meta property="og:title" content="Compliance Mapping — AIR Blackbox">
+    <meta property="og:description" content="EU AI Act to ISO 42001 to NIST AI RMF compliance mapping.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://airblackbox.ai/compliance-mapping.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0b;
+            --bg-card: #111113;
+            --bg-card-hover: #18181b;
+            --border: #27272a;
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+            --text-dim: #71717a;
+            --accent: #f97316;
+            --accent-hover: #fb923c;
+            --accent-glow: rgba(249, 115, 22, 0.15);
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(10, 10, 11, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .nav-logo {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .nav-logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta {
+            background: var(--accent) !important;
+            color: #000 !important;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px !important;
+            transition: background 0.2s;
+        }
+        .nav-cta:hover { background: var(--accent-hover) !important; }
+
+        /* Sections */
+        section { padding: 100px 24px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Page Header */
+        .page-header {
+            padding: 160px 24px 100px;
+            text-align: center;
+            position: relative;
+        }
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        h1 {
+            font-size: clamp(40px, 6vw, 64px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 24px;
+        }
+        h1 .highlight { color: var(--accent); }
+        .page-sub {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Content sections */
+        .section-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 32px;
+            margin-top: 64px;
+        }
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Mapping table */
+        .mapping-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 48px;
+        }
+        .mapping-table thead {
+            background: rgba(249, 115, 22, 0.05);
+            border-bottom: 1px solid var(--border);
+        }
+        .mapping-table th {
+            padding: 20px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text);
+            border-right: 1px solid var(--border);
+        }
+        .mapping-table th:last-child {
+            border-right: none;
+        }
+        .mapping-table td {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .mapping-table td:last-child {
+            border-right: none;
+        }
+        .mapping-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .mapping-table tbody tr:hover {
+            background: rgba(249, 115, 22, 0.02);
+        }
+
+        /* Article cell */
+        .article-col {
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 80px;
+        }
+
+        /* Coverage badge */
+        .coverage-full {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .coverage-partial {
+            display: inline-block;
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Detailed mappings grid */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        .detail-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+        .detail-card:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+        }
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .detail-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .detail-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .detail-coverage {
+            margin-left: auto;
+        }
+
+        /* Mapping rows */
+        .mapping-rows {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .mapping-row {
+            background: rgba(249, 115, 22, 0.02);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(249, 115, 22, 0.1);
+        }
+        .mapping-row-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .mapping-row-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Coverage definitions */
+        .coverage-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 48px;
+        }
+        .coverage-def {
+            margin-bottom: 24px;
+        }
+        .coverage-def:last-child {
+            margin-bottom: 0;
+        }
+        .coverage-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .coverage-badge-inline {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .coverage-badge-full {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+        }
+        .coverage-badge-partial {
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--accent);
+        }
+        .coverage-text {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 48px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .disclaimer strong {
+            color: var(--text);
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .mapping-rows { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .nav-links a:not(.nav-cta) { display: none; }
+            h1 { font-size: 36px; letter-spacing: -1px; }
+            .section-title { font-size: 24px; }
+            .mapping-table {
+                font-size: 12px;
+            }
+            .mapping-table th, .mapping-table td {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">AIR <span>Blackbox</span></a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/#compliance">Compliance</a>
+            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
+            <a href="#" class="nav-cta">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>Compliance <span class="highlight">Mapping</span></h1>
+        <p class="page-sub">EU AI Act articles mapped to ISO 42001 and NIST AI RMF frameworks. A technical reference for compliance implementation.</p>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Executive Summary</h2>
+        <p style="color: var(--text-muted); font-size: 16px; line-height: 1.8; margin-bottom: 32px;">
+            The EU AI Act (Articles 9-15) establishes risk management, data governance, documentation, human oversight, and security requirements for AI systems. AIR Blackbox provides controls that map directly to these articles and align with ISO 42001 (AI Management System) and NIST AI RMF (AI Risk Management Framework) standards.
+        </p>
+        <p style="color: var(--text-muted); font-size: 16px; line-height: 1.8;">
+            This document shows how each EU AI Act article relates to specific ISO 42001 controls and NIST AI RMF categories. It serves as a bridge between regulatory requirements and technical implementation.
+        </p>
+    </div>
+</section>
+
+<!-- Summary Mapping Table -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Summary Mapping Table</h2>
+        <table class="mapping-table">
+            <thead>
+                <tr>
+                    <th>EU AI Act Article</th>
+                    <th>ISO 42001 Controls</th>
+                    <th>NIST AI RMF Functions</th>
+                    <th>Coverage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="article-col">Article 9</td>
+                    <td>A.5.1–A.5.4</td>
+                    <td>GOVERN-1, MAP-1, MAP-2, MEASURE-1</td>
+                    <td><span class="coverage-full">Full Coverage</span></td>
+                </tr>
+                <tr>
+                    <td class="article-col">Article 10</td>
+                    <td>A.7.1–A.7.3, A.6.2</td>
+                    <td>GOVERN-1, MAP-1, MEASURE-2</td>
+                    <td><span class="coverage-full">Full Coverage</span></td>
+                </tr>
+                <tr>
+                    <td class="article-col">Article 11</td>
+                    <td>A.6.2, A.8.1</td>
+                    <td>GOVERN-1, MAP-1, MAP-3</td>
+                    <td><span class="coverage-full">Full Coverage</span></td>
+                </tr>
+                <tr>
+                    <td class="article-col">Article 12</td>
+                    <td>A.8.2–A.8.3, A.9.1–A.9.2</td>
+                    <td>GOVERN-1, MEASURE-3, MANAGE-1</td>
+                    <td><span class="coverage-partial">Partial Coverage</span></td>
+                </tr>
+                <tr>
+                    <td class="article-col">Article 14</td>
+                    <td>A.9.1–A.9.2, A.6.1</td>
+                    <td>GOVERN-3, MEASURE-4, MANAGE-2</td>
+                    <td><span class="coverage-full">Full Coverage</span></td>
+                </tr>
+                <tr>
+                    <td class="article-col">Article 15</td>
+                    <td>A.5.4, A.7.1, A.8.1</td>
+                    <td>GOVERN-1, MEASURE-2, MEASURE-4, MANAGE-2</td>
+                    <td><span class="coverage-full">Full Coverage</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Detailed Article Mappings -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Detailed Article Mappings</h2>
+
+        <!-- Article 9 -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-number">9</div>
+                <div>
+                    <div class="detail-title">Risk Management</div>
+                </div>
+                <div class="detail-coverage"><span class="coverage-full">Full Coverage</span></div>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Risk classification of tool calls (LOW → CRITICAL). Enforcement of risk-based blocking policies. Systematic identification and mitigation of AI system risks.</p>
+            <div class="mapping-rows">
+                <div class="mapping-row">
+                    <div class="mapping-row-label">ISO 42001 Controls</div>
+                    <div class="mapping-row-value">
+                        <strong>A.5.1</strong> Risk management policy<br>
+                        <strong>A.5.2</strong> Risk assessment<br>
+                        <strong>A.5.3</strong> Risk treatment<br>
+                        <strong>A.5.4</strong> Risk monitoring
+                    </div>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-row-label">NIST AI RMF Functions</div>
+                    <div class="mapping-row-value">
+                        <strong>GOVERN-1</strong> Establish governance structures<br>
+                        <strong>MAP-1</strong> Map AI systems and dependencies<br>
+                        <strong>MAP-2</strong> Identify impact of AI systems<br>
+                        <strong>MEASURE-1</strong> Measure performance
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article 10 -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-number">10</div>
+                <div>
+                    <div class="detail-title">Data Governance</div>
+                </div>
+                <div class="detail-coverage"><span class="coverage-full">Full Coverage</span></div>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">PII redaction across recruiting, finance (PCI-DSS), healthcare (HIPAA), and legal domains. GDPR Article 30 processing manifests. Data erasure support.</p>
+            <div class="mapping-rows">
+                <div class="mapping-row">
+                    <div class="mapping-row-label">ISO 42001 Controls</div>
+                    <div class="mapping-row-value">
+                        <strong>A.7.1</strong> Data governance<br>
+                        <strong>A.7.2</strong> Data quality<br>
+                        <strong>A.7.3</strong> Data management<br>
+                        <strong>A.6.2</strong> Information security
+                    </div>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-row-label">NIST AI RMF Functions</div>
+                    <div class="mapping-row-value">
+                        <strong>GOVERN-1</strong> Establish governance structures<br>
+                        <strong>MAP-1</strong> Map AI systems and dependencies<br>
+                        <strong>MEASURE-2</strong> Measure performance for fairness/bias
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article 11 -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-number">11</div>
+                <div>
+                    <div class="detail-title">Technical Documentation</div>
+                </div>
+                <div class="detail-coverage"><span class="coverage-full">Full Coverage</span></div>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Structured audit logging of full call graphs: chain → LLM → tool → result. Complete technical documentation of AI system operation.</p>
+            <div class="mapping-rows">
+                <div class="mapping-row">
+                    <div class="mapping-row-label">ISO 42001 Controls</div>
+                    <div class="mapping-row-value">
+                        <strong>A.6.2</strong> Information security<br>
+                        <strong>A.8.1</strong> Documentation and records
+                    </div>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-row-label">NIST AI RMF Functions</div>
+                    <div class="mapping-row-value">
+                        <strong>GOVERN-1</strong> Establish governance structures<br>
+                        <strong>MAP-1</strong> Map AI systems and dependencies<br>
+                        <strong>MAP-3</strong> Characterize AI system components
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article 12 -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-number">12</div>
+                <div>
+                    <div class="detail-title">Record-Keeping</div>
+                </div>
+                <div class="detail-coverage"><span class="coverage-partial">Partial Coverage</span></div>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">HMAC-SHA256 tamper-evident chains. Cryptographically signed and linked event logs. Partial coverage: retention policies and long-term archive strategies require organizational process enhancements.</p>
+            <div class="mapping-rows">
+                <div class="mapping-row">
+                    <div class="mapping-row-label">ISO 42001 Controls</div>
+                    <div class="mapping-row-value">
+                        <strong>A.8.2</strong> Records management<br>
+                        <strong>A.8.3</strong> Archival and disposal<br>
+                        <strong>A.9.1</strong> Incident management<br>
+                        <strong>A.9.2</strong> Compliance monitoring
+                    </div>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-row-label">NIST AI RMF Functions</div>
+                    <div class="mapping-row-value">
+                        <strong>GOVERN-1</strong> Establish governance structures<br>
+                        <strong>MEASURE-3</strong> Measure performance for incident detection<br>
+                        <strong>MANAGE-1</strong> Manage documented incidents
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article 14 -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-number">14</div>
+                <div>
+                    <div class="detail-title">Human Oversight</div>
+                </div>
+                <div class="detail-coverage"><span class="coverage-full">Full Coverage</span></div>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Exception-based blocking for critical operations. Humans remain in the decision loop. Full audit trails enable post-hoc review and human accountability.</p>
+            <div class="mapping-rows">
+                <div class="mapping-row">
+                    <div class="mapping-row-label">ISO 42001 Controls</div>
+                    <div class="mapping-row-value">
+                        <strong>A.9.1</strong> Incident management<br>
+                        <strong>A.9.2</strong> Compliance monitoring<br>
+                        <strong>A.6.1</strong> Organizational controls
+                    </div>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-row-label">NIST AI RMF Functions</div>
+                    <div class="mapping-row-value">
+                        <strong>GOVERN-3</strong> Establish supply chain risk management<br>
+                        <strong>MEASURE-4</strong> Measure performance for human oversight<br>
+                        <strong>MANAGE-2</strong> Manage incidents and risks
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article 15 -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="detail-number">15</div>
+                <div>
+                    <div class="detail-title">Robustness & Security</div>
+                </div>
+                <div class="detail-coverage"><span class="coverage-full">Full Coverage</span></div>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Injection detection (15+ weighted patterns). RAG write gates with source allowlists and content filtering. Real-time drift detection for retrieval anomalies. Defense-in-depth against adversarial attacks.</p>
+            <div class="mapping-rows">
+                <div class="mapping-row">
+                    <div class="mapping-row-label">ISO 42001 Controls</div>
+                    <div class="mapping-row-value">
+                        <strong>A.5.4</strong> Risk monitoring<br>
+                        <strong>A.7.1</strong> Data governance<br>
+                        <strong>A.8.1</strong> Documentation and records
+                    </div>
+                </div>
+                <div class="mapping-row">
+                    <div class="mapping-row-label">NIST AI RMF Functions</div>
+                    <div class="mapping-row-value">
+                        <strong>GOVERN-1</strong> Establish governance structures<br>
+                        <strong>MEASURE-2</strong> Measure security performance<br>
+                        <strong>MEASURE-4</strong> Measure adversarial resilience<br>
+                        <strong>MANAGE-2</strong> Manage identified risks
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Coverage Definitions -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Coverage Definitions</h2>
+        <div class="coverage-section">
+            <div class="coverage-def">
+                <div class="coverage-label">
+                    <span class="coverage-badge-inline coverage-badge-full">Full Coverage</span>
+                    <span>Complete Compliance</span>
+                </div>
+                <p class="coverage-text">AIR Blackbox provides comprehensive controls that fully satisfy the article's requirements. Regulatory compliance is achievable through proper implementation and configuration of the technical controls provided.</p>
+            </div>
+            <div class="coverage-def">
+                <div class="coverage-label">
+                    <span class="coverage-badge-inline coverage-badge-partial">Partial Coverage</span>
+                    <span>Requires Organizational Processes</span>
+                </div>
+                <p class="coverage-text">AIR Blackbox provides core technical controls, but the article also requires organizational governance, policy, or process enhancements beyond the software. Technical controls alone are insufficient; complementary business processes must be established.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Disclaimer -->
+<section>
+    <div class="container">
+        <div class="disclaimer">
+            <strong>Legal Disclaimer:</strong> This is a technical reference document, not legal advice. The mapping presented here reflects AIR Blackbox's technical interpretation of the EU AI Act, ISO 42001, and NIST AI RMF. Actual compliance obligations depend on your specific jurisdiction, industry, and AI system risk classification. Please consult legal counsel to ensure compliance with all applicable regulations. AIR Blackbox is not liable for compliance gaps resulting from reliance on this document.
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="footer-links">
+            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
+            <a href="https://pypi.org/search/?q=air+blackbox" target="_blank">PyPI</a>
+            <a href="mailto:jason@airblackbox.ai">Contact</a>
+            <a href="https://github.com/airblackbox/air-compliance-checker" target="_blank">Documentation</a>
+        </div>
+        <div class="footer-copy">Apache 2.0 &middot; Built on OpenTelemetry &middot; &copy; 2026 AIR Blackbox</div>
+    </div>
+</footer>
+
+<!-- Vercel Web Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
+<!-- Vercel Speed Insights -->
+<script defer src="/_vercel/speed-insights/script.js"></script>
+
+</body>
+</html>
