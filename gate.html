@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIR Blackbox Gate — AI Action Firewall for EU AI Act Article 12</title>
+    <meta name="description" content="Tamper-evident HMAC-SHA256 audit chains for AI agent action gating. Human-in-the-loop approval via Slack. EU AI Act Article 12 compliance.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0a0b;
+            --bg-card: #111113;
+            --bg-card-hover: #18181b;
+            --border: #27272a;
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+            --text-dim: #71717a;
+            --accent: #f97316;
+            --accent-hover: #fb923c;
+            --accent-glow: rgba(249, 115, 22, 0.15);
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        /* Nav */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(10, 10, 11, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px;
+        }
+        .nav-logo { font-weight: 800; font-size: 18px; color: var(--text); text-decoration: none; }
+        .nav-logo span { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 32px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta { background: var(--accent) !important; color: var(--bg) !important; padding: 8px 20px !important; border-radius: 8px; font-weight: 600 !important; }
+        .nav-cta:hover { background: var(--accent-hover) !important; }
+        /* Hero */
+        .hero { padding: 160px 24px 80px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2);
+            padding: 8px 20px; border-radius: 100px; font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 32px;
+        }
+        .hero h1 { font-size: clamp(40px, 6vw, 64px); font-weight: 900; line-height: 1.1; margin-bottom: 24px; }
+        .hero h1 .highlight { color: var(--accent); display: block; }
+        .hero p { font-size: 18px; color: var(--text-muted); max-width: 640px; margin: 0 auto 48px; line-height: 1.7; }
+        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg); padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; transition: background 0.2s; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text); padding: 14px 28px; border-radius: 10px; border: 1px solid var(--border); font-weight: 600; font-size: 15px; text-decoration: none; transition: all 0.2s; }
+        .btn-secondary:hover { background: var(--bg-card); border-color: var(--text-dim); }
+        /* Section */
+        section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; }
+        .section-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 12px; text-align: center; }
+        .section-title { font-size: clamp(28px, 4vw, 40px); font-weight: 800; text-align: center; margin-bottom: 16px; }
+        .section-sub { font-size: 17px; color: var(--text-muted); text-align: center; max-width: 640px; margin: 0 auto 56px; }
+
+        /* Flow */
+        .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-bottom: 64px; }
+        .flow-step { background: var(--bg-card); border: 1px solid var(--border); padding: 32px 24px; text-align: center; position: relative; }
+        .flow-step:first-child { border-radius: 16px 0 0 16px; }
+        .flow-step:last-child { border-radius: 0 16px 16px 0; }
+        .flow-num { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-glow); border: 1px solid rgba(249, 115, 22, 0.3); color: var(--accent); font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .flow-step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .flow-step p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .flow-arrow { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 20px; z-index: 2; }
+        /* Feature Cards */
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: border-color 0.2s; }
+        .feature-card:hover { border-color: var(--text-dim); }
+        .feature-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; }
+        .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+        .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(249, 115, 22, 0.1); color: var(--accent); border: 1px solid rgba(249, 115, 22, 0.2); }
+
+        /* Terminal */
+        .terminal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; max-width: 800px; margin: 0 auto; }
+        .terminal-bar { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .terminal-dot.r { background: #ef4444; } .terminal-dot.y { background: #eab308; } .terminal-dot.g { background: #22c55e; }
+        .terminal-title { font-size: 13px; color: var(--text-dim); margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
+        .terminal-body { padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8; overflow-x: auto; }
+        .t-comment { color: var(--text-dim); } .t-green { color: var(--green); } .t-red { color: var(--red); }
+        .t-yellow { color: var(--yellow); } .t-blue { color: var(--blue); } .t-accent { color: var(--accent); } .t-muted { color: var(--text-muted); }
+        /* Slack Preview */
+        .slack-preview { background: #1a1d21; border: 1px solid #2c2d30; border-radius: 16px; max-width: 560px; margin: 0 auto; overflow: hidden; }
+        .slack-header { padding: 16px 20px; border-bottom: 1px solid #2c2d30; display: flex; align-items: center; gap: 8px; }
+        .slack-channel { font-size: 15px; font-weight: 700; color: #d1d2d3; }
+        .slack-hash { color: #9a9b9d; font-size: 18px; }
+        .slack-body { padding: 20px; }
+        .slack-msg { display: flex; gap: 12px; margin-bottom: 16px; }
+        .slack-avatar { width: 36px; height: 36px; border-radius: 6px; background: linear-gradient(135deg, var(--accent), #ea580c); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: white; flex-shrink: 0; }
+        .slack-content { flex: 1; }
+        .slack-sender { font-weight: 700; font-size: 14px; color: #d1d2d3; margin-bottom: 4px; }
+        .slack-sender span { font-weight: 400; font-size: 12px; color: #9a9b9d; margin-left: 8px; }
+        .slack-text { font-size: 14px; color: #d1d2d3; line-height: 1.5; }
+        .slack-attachment { border-left: 4px solid var(--accent); padding: 12px 16px; margin-top: 8px; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
+        .slack-field { margin-bottom: 8px; }
+        .slack-field-label { font-size: 12px; font-weight: 700; color: #9a9b9d; text-transform: uppercase; letter-spacing: 0.5px; }
+        .slack-field-value { font-size: 14px; color: #d1d2d3; }
+        .slack-buttons { display: flex; gap: 8px; margin-top: 12px; }
+        .slack-btn { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; }
+        .slack-btn-approve { background: #007a5a; color: white; }
+        .slack-btn-reject { background: #4a154b; color: white; }
+        /* Two-col layout */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .two-col-text h3 { font-size: 28px; font-weight: 800; margin-bottom: 16px; }
+        .two-col-text p { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
+
+        /* CTA & Footer */
+        .final-cta { text-align: center; padding: 80px 24px 120px; max-width: 800px; margin: 0 auto; }
+        .final-cta h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; }
+        .final-cta p { font-size: 17px; color: var(--text-muted); margin-bottom: 40px; }
+        footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; color: var(--text-dim); font-size: 13px; }
+        footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; }
+        footer a:hover { color: var(--text); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .flow { grid-template-columns: 1fr; }
+            .flow-step { border-radius: 0; }
+            .flow-step:first-child { border-radius: 16px 16px 0 0; }
+            .flow-step:last-child { border-radius: 0 0 16px 16px; }
+            .flow-arrow { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<!-- Nav -->
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">AIR <span>Blackbox</span></a>
+        <div class="nav-links">
+            <a href="/vaultmind/">Data Vault</a>
+            <a href="/gate.html">Gate</a>
+            <a href="/#features">Features</a>
+            <a href="/#frameworks">Frameworks</a>
+            <a href="/#compliance">Compliance</a>
+            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
+            <a href="https://github.com/airblackbox/air-gate" target="_blank" class="nav-cta">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-badge">EU AI Act Article 12 &middot; Record-Keeping</div>
+    <h1>Every AI action.<span class="highlight">Gated. Signed. Auditable.</span></h1>
+    <p>Gate is an AI action firewall that intercepts every tool call your agents make, checks it against policy, routes sensitive actions to humans via Slack, and signs everything with tamper-evident HMAC-SHA256 chains.</p>
+    <div class="hero-buttons">
+        <a href="https://github.com/airblackbox/air-gate" target="_blank" class="btn-primary">View on GitHub</a>
+        <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+    </div>
+</section>
+<!-- Video Demo -->
+<section style="max-width: 900px; margin: 0 auto; padding: 0 24px 80px;">
+    <div class="section-label">Watch the Demo</div>
+    <h2 class="section-title">Gate in 60 seconds</h2>
+    <p class="section-sub">See Gate intercept an agent action, route it to Slack for human approval, and sign the audit chain — live.</p>
+    <div style="border-radius: 16px; overflow: hidden; border: 1px solid var(--border); background: var(--bg-card);">
+        <div style="padding:64.03% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1168536641?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="AIR Blackbox Gate Demo"></iframe></div>
+    </div>
+</section>
+<script src="https://player.vimeo.com/api/player.js"></script>
+
+<!-- How it works -->
+<section id="how-it-works">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Four steps. Every action covered.</h2>
+    <p class="section-sub">Gate sits between your AI agent and the outside world. Nothing gets through without being checked, approved, and signed.</p>
+    <div class="flow">
+        <div class="flow-step">
+            <div class="flow-num">1</div>
+            <h3>Intercept</h3>
+            <p>Agent sends an action (email, API call, file write) to Gate's proxy endpoint.</p>
+            <span class="flow-arrow">&rarr;</span>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">2</div>
+            <h3>Evaluate</h3>
+            <p>Policy engine checks the action against rules: auto-allow, require approval, or block.</p>
+            <span class="flow-arrow">&rarr;</span>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">3</div>
+            <h3>Approve</h3>
+            <p>Sensitive actions go to Slack with Approve/Reject buttons. Humans stay in control.</p>
+            <span class="flow-arrow">&rarr;</span>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">4</div>
+            <h3>Sign</h3>
+            <p>Every event gets HMAC-SHA256 signed and chained. Tamper with one, break the whole chain.</p>
+        </div>
+    </div>
+</section>
+<!-- Terminal Demo -->
+<section>
+    <div class="section-label">Live Demo</div>
+    <h2 class="section-title">See it in action</h2>
+    <p class="section-sub">A recruiting AI agent tries to send an email, delete a record, and search a database. Gate handles each differently.</p>
+    <div class="terminal">
+        <div class="terminal-bar">
+            <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
+            <span class="terminal-title">python3 demo.py</span>
+        </div>
+        <div class="terminal-body">
+<span class="t-comment"># Agent tries to search candidates (low risk)</span>
+<br><span class="t-muted">POST /actions</span> &nbsp; <span class="t-blue">tool: search_candidates</span>
+<br><span class="t-green">&#10003; AUTO-ALLOWED</span> <span class="t-muted">— matched rule: allow-read-only</span>
+<br><br>
+<span class="t-comment"># Agent tries to send an email (needs approval)</span>
+<br><span class="t-muted">POST /actions</span> &nbsp; <span class="t-blue">tool: send_email</span>
+<br><span class="t-yellow">&#9679; PENDING APPROVAL</span> <span class="t-muted">— sent to #ai-approvals on Slack</span>
+<br><span class="t-green">&#10003; APPROVED</span> <span class="t-muted">by jason via Slack (12s)</span>
+<br><br>
+<span class="t-comment"># Agent tries to delete a record (blocked by policy)</span>
+<br><span class="t-muted">POST /actions</span> &nbsp; <span class="t-blue">tool: delete_record</span>
+<br><span class="t-red">&#10007; BLOCKED</span> <span class="t-muted">— matched rule: block-delete</span>
+<br><br>
+<span class="t-comment"># Verify the audit chain</span>
+<br><span class="t-muted">GET /verify</span>
+<br><span class="t-green">&#10003; Chain intact</span> <span class="t-muted">— 3 events, 0 tampered, HMAC-SHA256</span>
+        </div>
+    </div>
+</section>
+<!-- Slack Integration -->
+<section>
+    <div class="two-col">
+        <div class="two-col-text">
+            <div class="section-label" style="text-align:left">Human-in-the-Loop</div>
+            <h3>Approvals land in Slack</h3>
+            <p>When an agent tries something sensitive, Gate doesn't just log it. It pauses the action and sends a rich message to your Slack channel with full context: what agent, what action, what payload.</p>
+            <p>Your team clicks Approve or Reject. The decision is recorded in the tamper-evident chain. Regulators can verify that a human was in the loop.</p>
+            <div class="feature-tag">Article 14 — Human Oversight</div>
+        </div>
+        <div>
+            <div class="slack-preview">
+                <div class="slack-header">
+                    <span class="slack-hash">#</span>
+                    <span class="slack-channel">ai-approvals</span>
+                </div>
+                <div class="slack-body">
+                    <div class="slack-msg">
+                        <div class="slack-avatar">G</div>
+                        <div class="slack-content">
+                            <div class="slack-sender">Gate <span>11:42 AM</span></div>
+                            <div class="slack-text">Action requires approval</div>
+                            <div class="slack-attachment">
+                                <div class="slack-field"><div class="slack-field-label">Agent</div><div class="slack-field-value">recruiting-agent-v2</div></div>
+                                <div class="slack-field"><div class="slack-field-label">Action</div><div class="slack-field-value">send_email</div></div>
+                                <div class="slack-field"><div class="slack-field-label">To</div><div class="slack-field-value">hiring-manager@company.com</div></div>
+                                <div class="slack-buttons">
+                                    <button class="slack-btn slack-btn-approve">Approve</button>
+                                    <button class="slack-btn slack-btn-reject">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Features -->
+<section id="features">
+    <div class="section-label">Capabilities</div>
+    <h2 class="section-title">Built for compliance. Ready for production.</h2>
+    <p class="section-sub">Everything you need to prove your AI agents are governed, auditable, and human-supervised.</p>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(34, 197, 94, 0.1);">&#x1F512;</div>
+            <h3>HMAC-SHA256 Audit Chains</h3>
+            <p>Every event is cryptographically signed and chained to the previous one. Tamper with a single entry and the entire chain breaks. Regulators can mathematically verify integrity.</p>
+            <div class="feature-tag">Article 12</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(234, 179, 8, 0.1);">&#x26A0;&#xFE0F;</div>
+            <h3>Policy Engine</h3>
+            <p>YAML-configured rules that classify every action: auto-allow safe reads, require approval for writes, block destructive operations. First-match-wins with rate limiting.</p>
+            <div class="feature-tag">Article 9</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(249, 115, 22, 0.1);">&#x1F514;</div>
+            <h3>Slack Approvals</h3>
+            <p>Rich Block Kit messages with agent name, action type, full payload, and one-click Approve/Reject buttons. Every decision timestamped and signed into the chain.</p>
+            <div class="feature-tag">Article 14</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(59, 130, 246, 0.1);">&#x1F4CA;</div>
+            <h3>Compliance Reports</h3>
+            <p>Generate HTML, Markdown, or JSON reports with executive summary, action breakdown, human oversight stats, anomaly detection, and chain integrity verification.</p>
+            <div class="feature-tag">Article 11</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(239, 68, 68, 0.1);">&#x1F6AB;</div>
+            <h3>Anomaly Detection</h3>
+            <p>Flags off-hours activity, unusual block rates, high rejection rates, and volume spikes. Surfaces patterns that indicate agents operating outside expected bounds.</p>
+            <div class="feature-tag">Article 15</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(168, 85, 247, 0.1);">&#x26A1;</div>
+            <h3>FastAPI Proxy</h3>
+            <p>High-performance async proxy that sits in front of any AI agent. REST API with full CRUD on events, verification endpoints, and Slack webhook integration.</p>
+            <div class="feature-tag">Framework Agnostic</div>
+        </div>
+    </div>
+</section>
+<!-- Quick Start -->
+<section>
+    <div class="section-label">Get Started</div>
+    <h2 class="section-title">Running in 60 seconds</h2>
+    <p class="section-sub">Clone, configure, run. Gate works with any AI agent that makes HTTP calls.</p>
+    <div class="terminal">
+        <div class="terminal-bar">
+            <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
+            <span class="terminal-title">terminal</span>
+        </div>
+        <div class="terminal-body">
+<span class="t-comment"># Clone and install</span>
+<br><span class="t-green">$</span> git clone https://github.com/airblackbox/air-gate.git
+<br><span class="t-green">$</span> cd air-gate
+<br><span class="t-green">$</span> pip install -r requirements.txt
+<br><br>
+<span class="t-comment"># Configure (optional: add Slack webhook for approvals)</span>
+<br><span class="t-green">$</span> cp .env.example .env
+<br><span class="t-green">$</span> <span class="t-muted"># edit .env with your SLACK_WEBHOOK_URL</span>
+<br><br>
+<span class="t-comment"># Start the Gate proxy</span>
+<br><span class="t-green">$</span> uvicorn gate.proxy:app --reload
+<br><span class="t-blue">INFO</span>: &nbsp; Uvicorn running on <span class="t-accent">http://127.0.0.1:8000</span>
+<br><br>
+<span class="t-comment"># Point your agent's API calls at Gate</span>
+<br><span class="t-green">$</span> curl -X POST http://localhost:8000/actions \
+<br>&nbsp;&nbsp;-H "Content-Type: application/json" \
+<br>&nbsp;&nbsp;-d '{"agent_id": "my-agent", "action_type": "tool_call", "tool_name": "send_email"}'
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<div class="final-cta">
+    <h2>Stop trusting. Start verifying.</h2>
+    <p>Every AI agent action your company takes should be gated, signed, and auditable. Gate makes it happen in one afternoon.</p>
+    <div class="hero-buttons">
+        <a href="https://github.com/airblackbox/air-gate" target="_blank" class="btn-primary">Star on GitHub</a>
+        <a href="/" class="btn-secondary">Back to AIR Blackbox</a>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
+    <a href="https://pypi.org/search/?q=air-blackbox" target="_blank">PyPI</a>
+    <a href="mailto:jason@airblackbox.ai">Contact</a>
+    <br><br>
+    Apache 2.0 &middot; Built on OpenTelemetry &middot; &copy; 2026 AIR Blackbox
+</footer>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+});
+</script>
+</body>
+</html>

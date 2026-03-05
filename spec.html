@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Chain Specification v1.0 — AIR Blackbox</title>
+    <meta name="description" content="Technical specification for the Audit Chain Specification v1.0 - a tamper-evident, cryptographically linked record structure for AI agent compliance logging.">
+    <meta property="og:title" content="Audit Chain Specification v1.0 — AIR Blackbox">
+    <meta property="og:description" content="Tamper-evident audit chain format for AI agent compliance. HMAC-SHA256 signatures and blockchain-style chain linking.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://airblackbox.ai/spec.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0b;
+            --bg-card: #111113;
+            --bg-card-hover: #18181b;
+            --border: #27272a;
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+            --text-dim: #71717a;
+            --accent: #f97316;
+            --accent-hover: #fb923c;
+            --accent-glow: rgba(249, 115, 22, 0.15);
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(10, 10, 11, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .nav-logo {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .nav-logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta {
+            background: var(--accent) !important;
+            color: #000 !important;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px !important;
+            transition: background 0.2s;
+        }
+        .nav-cta:hover { background: var(--accent-hover) !important; }
+
+        /* Sections */
+        section { padding: 100px 24px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Page Header */
+        .page-header {
+            padding: 160px 24px 100px;
+            text-align: center;
+            position: relative;
+        }
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        h1 {
+            font-size: clamp(40px, 6vw, 64px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 24px;
+        }
+        h1 .highlight { color: var(--accent); }
+        .page-sub {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Content sections */
+        .section-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 32px;
+            margin-top: 64px;
+        }
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Content blocks */
+        .content-block {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+        .content-block p {
+            margin-bottom: 16px;
+        }
+        .content-block p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            overflow-x: auto;
+        }
+        .code-block pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            white-space: pre;
+        }
+        .code-block code {
+            color: var(--blue);
+        }
+
+        /* JSON Schema */
+        .schema-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .schema-item {
+            background: rgba(249, 115, 22, 0.02);
+            border: 1px solid rgba(249, 115, 22, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .schema-item-key {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .schema-item-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--blue);
+            margin-bottom: 8px;
+        }
+        .schema-item-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* Tables */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+        .spec-table thead {
+            background: rgba(249, 115, 22, 0.05);
+            border-bottom: 1px solid var(--border);
+        }
+        .spec-table th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text);
+            border-right: 1px solid var(--border);
+        }
+        .spec-table th:last-child {
+            border-right: none;
+        }
+        .spec-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .spec-table td:last-child {
+            border-right: none;
+        }
+        .spec-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .spec-table tbody tr:hover {
+            background: rgba(249, 115, 22, 0.02);
+        }
+        .table-action { color: var(--accent); font-weight: 600; }
+        .table-article { color: var(--accent); font-weight: 700; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+        .card-content {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Verification steps */
+        .verification-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .verification-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .step-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: #000;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        .step-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Badges */
+        .badge-required {
+            display: inline-block;
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+        .badge-optional {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--green);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--blue);
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .schema-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .nav-links a:not(.nav-cta) { display: none; }
+            h1 { font-size: 36px; letter-spacing: -1px; }
+            .section-title { font-size: 24px; }
+            .spec-table {
+                font-size: 12px;
+            }
+            .spec-table th, .spec-table td {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">AIR <span>Blackbox</span></a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/vaultmind/">Data Vault</a>
+            <a href="/compliance-mapping.html">Compliance</a>
+            <a href="/spec.html">Spec</a>
+            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
+            <a href="#" class="nav-cta">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>Audit Chain <span class="highlight">Specification v1.0</span></h1>
+        <p class="page-sub">Tamper-Evident Audit Chain Format for AI Agent Compliance. A cryptographically linked record structure for logging AI agent actions with full integrity verification.</p>
+    </div>
+</section>
+
+<!-- Overview Section -->
+<section>
+    <div class="container">
+        <div class="status-badge">Draft Specification</div>
+
+        <h2 class="section-title">Overview</h2>
+        <div class="content-block">
+            <p>The Audit Chain is a tamper-evident, cryptographically linked record structure designed for logging AI agent actions in compliance-critical environments. Built on industry-standard HMAC-SHA256 signatures and blockchain-style chain linking, the Audit Chain provides verifiable proof that:</p>
+            <ul style="margin-left: 24px; margin-bottom: 16px;">
+                <li>No entries have been modified after creation</li>
+                <li>No entries have been deleted from the sequence</li>
+                <li>All entries are cryptographically signed and verified</li>
+                <li>The complete audit trail is preserved in order</li>
+            </ul>
+            <p>Each entry records a discrete AI agent action (LLM calls, tool invocations, consent events, security detections) with deterministic SHA-256 content hashing, linked to the previous entry, and signed with a 256-bit HMAC-SHA256 secret key. This design ensures that the audit chain becomes a primary evidence source for regulatory compliance under the EU AI Act Articles 12 (Record-keeping) and 14 (Human Oversight).</p>
+        </div>
+    </div>
+</section>
+
+<!-- Entry Format Section -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Entry Format</h2>
+        <div class="content-block">
+            <p>Each audit chain entry is a JSON object with required fields for sequencing, cryptographic integrity, and action metadata. The entry structure is deterministic and language-agnostic, enabling verification across different platforms and tools.</p>
+        </div>
+
+        <div style="margin-bottom: 48px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text);">Required Fields</h3>
+            <div class="schema-grid">
+                <div class="schema-item">
+                    <div class="schema-item-key">id</div>
+                    <div class="schema-item-type">UUID v4 (string)</div>
+                    <div class="schema-item-desc">Unique identifier for this entry. Generated using Python's uuid.uuid4(). Used in signature calculation.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">sequence</div>
+                    <div class="schema-item-type">integer (0-indexed)</div>
+                    <div class="schema-item-desc">Entry index in the chain. First entry is 0, incrementing by 1. Used to detect missing entries.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">hash</div>
+                    <div class="schema-item-type">64 hex characters (string)</div>
+                    <div class="schema-item-desc">SHA-256 hash of the deterministic JSON payload (alphabetically sorted keys, no whitespace). Verified by recomputing the hash and comparing.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">prev_hash</div>
+                    <div class="schema-item-type">64 hex characters (string)</div>
+                    <div class="schema-item-desc">Hash of the previous entry's content. Genesis entry (sequence 0) uses 64 zeros. Links entries into an immutable chain.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">signature</div>
+                    <div class="schema-item-type">128 hex characters (string)</div>
+                    <div class="schema-item-desc">HMAC-SHA256 of the message "{sequence}|{id}|{hash}|{prev_hash}" using a 256-bit secret key. Verifies entry authenticity and integrity.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">timestamp</div>
+                    <div class="schema-item-type">ISO 8601 string</div>
+                    <div class="schema-item-desc">UTC datetime when the entry was created. Format: "2026-02-28T14:30:45.123456Z". Used for temporal ordering and compliance records.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">action</div>
+                    <div class="schema-item-type">string (enum)</div>
+                    <div class="schema-item-desc">Type of AI agent action. Valid values: llm_call, tool_call, plugin_started, injection_scan, data_tokenized, consent_required, consent_granted, consent_rejected. Used for filtering and analysis.</div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text);">Optional Fields</h3>
+            <div class="schema-grid">
+                <div class="schema-item">
+                    <div class="schema-item-key">tool_name</div>
+                    <div class="schema-item-type">string</div>
+                    <div class="schema-item-desc">Name of the tool invoked (e.g., "send_email", "database_query"). Only for tool_call actions.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">risk_level</div>
+                    <div class="schema-item-type">enum: critical|high|medium|low|none</div>
+                    <div class="schema-item-desc">Risk classification of the action according to AIR Blackbox risk scoring. Used for compliance auditing.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">consent_required</div>
+                    <div class="schema-item-type">boolean</div>
+                    <div class="schema-item-desc">Whether human consent was required for this action. True for critical/high-risk operations.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">consent_granted</div>
+                    <div class="schema-item-type">boolean</div>
+                    <div class="schema-item-desc">Whether consent was given (if required). False if blocked.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">data_tokenized</div>
+                    <div class="schema-item-type">boolean</div>
+                    <div class="schema-item-desc">Whether PII/sensitive data was tokenized before storage. True indicates compliance with Article 10 (Data Governance).</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">injection_detected</div>
+                    <div class="schema-item-type">boolean</div>
+                    <div class="schema-item-desc">Whether a prompt injection was detected and blocked. True for Article 15 (Robustness) evidence.</div>
+                </div>
+                <div class="schema-item">
+                    <div class="schema-item-key">metadata</div>
+                    <div class="schema-item-type">object (any structure)</div>
+                    <div class="schema-item-desc">Free-form metadata for custom extensions. Not included in signature calculation. Examples: user_id, session_id, model_name.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Cryptographic Integrity Section -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Cryptographic Integrity</h2>
+        <div class="content-block">
+            <p>The Audit Chain uses three layers of cryptographic protection to ensure tamper-evidence and integrity verification:</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Content Hash (SHA-256)</div>
+            <div class="card-content">
+                <p>Each entry's content is hashed using SHA-256 to create a deterministic digest. The payload includes id, sequence, prev_hash, timestamp, action, and all optional fields, but excludes signature and metadata. Keys are sorted alphabetically, and whitespace is removed to ensure determinism across systems.</p>
+                <div class="code-block">
+                    <pre>Payload: {action, id, prev_hash, sequence, timestamp, ...}
+sorted_keys = True
+no_whitespace = True
+hash = SHA256(deterministic_json)</pre>
+                </div>
+                <p>The resulting hash is 64 hexadecimal characters and is stored in the hash field.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">HMAC-SHA256 Signature</div>
+            <div class="card-content">
+                <p>The signature proves authenticity and prevents forgery. It is computed over a canonical message containing the entry's key identifiers:</p>
+                <div class="code-block">
+                    <pre>message = "{sequence}|{id}|{hash}|{prev_hash}"
+signature = HMAC-SHA256(message, secret_key)
+secret_key: 256-bit (32 bytes) key, stored securely</pre>
+                </div>
+                <p>The signature is 128 hexadecimal characters (512 bits). Verification recomputes the HMAC and compares to the stored signature. A mismatch indicates tampering.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Chain Linking (Merkle Chain)</div>
+            <div class="card-content">
+                <p>Each entry's prev_hash field contains the SHA-256 hash of the previous entry's content. This creates an immutable chain where any modification to a past entry breaks all subsequent signatures. The first entry (genesis, sequence=0) uses prev_hash = 64 zeros (0x00...00).</p>
+                <div class="code-block">
+                    <pre>Entry[0]: prev_hash = "0000000000000000000000000000000000000000000000000000000000000000"
+Entry[1]: prev_hash = hash(Entry[0].content)
+Entry[2]: prev_hash = hash(Entry[1].content)
+...
+Entry[n]: prev_hash = hash(Entry[n-1].content)</pre>
+                </div>
+                <p>Chain linkage ensures that entries cannot be reordered, removed, or inserted without detection.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Entry Types Section -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Entry Types</h2>
+        <div class="content-block">
+            <p>The audit chain supports eight action types, each mapped to specific EU AI Act articles and AIR Blackbox compliance controls.</p>
+        </div>
+
+        <table class="spec-table">
+            <thead>
+                <tr>
+                    <th>Action Type</th>
+                    <th>Description</th>
+                    <th>EU AI Act Mapping</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="table-action">llm_call</span></td>
+                    <td>Language model invocation with prompt and response</td>
+                    <td><span class="table-article">Article 11</span> (Documentation), <span class="table-article">12</span> (Record-keeping)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">tool_call</span></td>
+                    <td>Tool/function execution with risk classification</td>
+                    <td><span class="table-article">Article 9</span> (Risk Management), <span class="table-article">14</span> (Oversight)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">plugin_started</span></td>
+                    <td>Third-party plugin or extension initialization</td>
+                    <td><span class="table-article">Article 9</span> (Risk Management)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">injection_scan</span></td>
+                    <td>Prompt injection detection completed</td>
+                    <td><span class="table-article">Article 15</span> (Robustness & Security)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">data_tokenized</span></td>
+                    <td>PII redaction or tokenization applied</td>
+                    <td><span class="table-article">Article 10</span> (Data Governance)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">consent_required</span></td>
+                    <td>Human consent requested for critical action</td>
+                    <td><span class="table-article">Article 14</span> (Human Oversight)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">consent_granted</span></td>
+                    <td>Human approval given; action proceeds</td>
+                    <td><span class="table-article">Article 14</span> (Human Oversight)</td>
+                </tr>
+                <tr>
+                    <td><span class="table-action">consent_rejected</span></td>
+                    <td>Human blocked action; execution prevented</td>
+                    <td><span class="table-article">Article 14</span> (Human Oversight)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Verification Section -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Verification</h2>
+        <div class="content-block">
+            <p>The integrity of an audit chain is verified through four sequential checks. All must pass for the chain to be considered valid and tamper-free.</p>
+        </div>
+
+        <div class="verification-grid">
+            <div class="verification-step">
+                <div class="step-number">1</div>
+                <div class="step-title">Sequence Continuity</div>
+                <div class="step-desc">Verify that entry sequence numbers increment by 1 from 0 with no gaps. If entry[i].sequence ≠ i, the chain is incomplete or corrupted.</div>
+            </div>
+            <div class="verification-step">
+                <div class="step-number">2</div>
+                <div class="step-title">Chain Linkage Verification</div>
+                <div class="step-desc">For each entry, verify that entry[i].prev_hash = SHA256(entry[i-1].content). Entry[0].prev_hash must equal 64 zeros. A broken link indicates deletion or reordering.</div>
+            </div>
+            <div class="verification-step">
+                <div class="step-number">3</div>
+                <div class="step-title">Content Hash Integrity</div>
+                <div class="step-desc">Recompute the SHA-256 hash of each entry's content (sorted keys, no whitespace) and compare to entry.hash. A mismatch indicates field modification.</div>
+            </div>
+            <div class="verification-step">
+                <div class="step-number">4</div>
+                <div class="step-title">HMAC Signature Verification</div>
+                <div class="step-desc">Recompute HMAC-SHA256("{sequence}|{id}|{hash}|{prev_hash}") with the secret key and compare to entry.signature. A mismatch indicates tampering or wrong secret key.</div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 24px; margin-top: 32px; color: var(--text);">Verification Python Implementation</h3>
+        <div class="code-block">
+            <pre>import json
+import hashlib
+import hmac
+from typing import List, Dict, Tuple
+
+def verify_audit_chain(
+    entries: List[Dict],
+    secret_key: bytes
+) -> Tuple[bool, List[str]]:
+    """Verify complete audit chain integrity.
+
+    Args:
+        entries: List of audit chain entry dicts
+        secret_key: 32-byte HMAC secret key
+
+    Returns:
+        (is_valid, error_messages)
+    """
+    errors = []
+
+    # Check 1: Sequence continuity
+    for i, entry in enumerate(entries):
+        if entry.get('sequence') != i:
+            errors.append(
+                f"Entry {i}: sequence mismatch "
+                f"(expected {i}, got {entry.get('sequence')})"
+            )
+
+    # Check 2: Chain linkage
+    genesis_hash = "0" * 64
+    for i, entry in enumerate(entries):
+        if i == 0:
+            expected_prev = genesis_hash
+        else:
+            expected_prev = entries[i-1]['hash']
+
+        if entry.get('prev_hash') != expected_prev:
+            errors.append(
+                f"Entry {i}: prev_hash mismatch "
+                f"(chain break or reordering detected)"
+            )
+
+    # Check 3: Content hash integrity
+    for i, entry in enumerate(entries):
+        # Reconstruct deterministic payload
+        payload = {k: entry[k] for k in sorted(entry.keys())
+                   if k not in ['signature', 'metadata']}
+        payload_json = json.dumps(payload, separators=(',', ':'),
+                                  sort_keys=True)
+        computed_hash = hashlib.sha256(
+            payload_json.encode()
+        ).hexdigest()
+
+        if computed_hash != entry.get('hash'):
+            errors.append(
+                f"Entry {i}: content hash mismatch "
+                f"(field tampering detected)"
+            )
+
+    # Check 4: HMAC signature verification
+    for i, entry in enumerate(entries):
+        seq = entry['sequence']
+        eid = entry['id']
+        ehash = entry['hash']
+        prev = entry['prev_hash']
+
+        message = f"{seq}|{eid}|{ehash}|{prev}".encode()
+        computed_sig = hmac.new(
+            secret_key,
+            message,
+            hashlib.sha256
+        ).hexdigest()
+
+        if computed_sig != entry.get('signature'):
+            errors.append(
+                f"Entry {i}: signature mismatch "
+                f"(tampering or wrong secret key)"
+            )
+
+    is_valid = len(errors) == 0
+    return is_valid, errors</pre>
+        </div>
+    </div>
+</section>
+
+<!-- EU AI Act Mapping Section -->
+<section>
+    <div class="container">
+        <h2 class="section-title">EU AI Act Mapping</h2>
+        <div class="content-block">
+            <p>The Audit Chain specification directly addresses two critical EU AI Act articles, providing the technical foundation for compliance evidence.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Article 12: Record-Keeping</div>
+            <div class="card-content">
+                <p><strong>Regulatory requirement:</strong> "Providers of high-risk AI systems shall automatically record their operation through logging. The logs shall be kept for a period appropriate to the duration of the use of the system and for a period of at least 6 months after the cessation of use."</p>
+                <p style="margin-top: 16px;"><strong>Audit Chain solution:</strong> The tamper-evident audit chain with HMAC-SHA256 signatures and Merkle linking provides cryptographic proof that:</p>
+                <ul style="margin-left: 24px; margin-top: 12px;">
+                    <li>All operations are logged with immutable timestamps</li>
+                    <li>No log entries have been deleted or modified</li>
+                    <li>The complete sequence is preserved</li>
+                    <li>Logs can be retained and verified for 6+ months</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Article 14: Human Oversight</div>
+            <div class="card-content">
+                <p><strong>Regulatory requirement:</strong> "Natural persons who use high-risk AI systems shall have information to interpret its output. Users shall be able to effectively oversee the system. Design and deployment of high-risk AI systems shall take into account the human oversight requirements."</p>
+                <p style="margin-top: 16px;"><strong>Audit Chain solution:</strong> The audit chain tracks human decisions and AI actions:</p>
+                <ul style="margin-left: 24px; margin-top: 12px;">
+                    <li>consent_required entries show when human review is triggered</li>
+                    <li>consent_granted/consent_rejected entries document human decisions</li>
+                    <li>Complete audit trail enables post-hoc review and accountability</li>
+                    <li>Risk-classified tool_call entries enable oversight of critical operations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/compliance-mapping.html">Compliance Mapping</a>
+            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
+            <a href="https://pypi.org/search/?q=air+blackbox" target="_blank">PyPI</a>
+            <a href="mailto:jason@airblackbox.ai">Contact</a>
+        </div>
+        <div class="footer-copy">Apache 2.0 &middot; Draft Specification &middot; &copy; 2026 AIR Blackbox</div>
+    </div>
+</footer>
+
+<!-- Vercel Web Analytics -->
+<script defer src="/_vercel/insights/script.js"></script>
+<!-- Vercel Speed Insights -->
+<script defer src="/_vercel/speed-insights/script.js"></script>
+
+</body>
+</html>
