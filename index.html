@@ -3,1177 +3,1091 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIR Blackbox — EU AI Act Compliance for AI Agents</title>
-    <meta name="description" content="Open-source compliance infrastructure for AI agents. Tamper-evident audit trails, injection defense, and EU AI Act coverage. Drop-in trust layers for LangChain, CrewAI, AutoGen, and OpenAI Agents SDK.">
-    <meta property="og:title" content="AIR Blackbox — EU AI Act Compliance for AI Agents">
-    <meta property="og:description" content="The August 2, 2026 deadline is 5 months away. Is your AI agent infrastructure compliant?">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://airblackbox.ai">
-    <meta name="twitter:card" content="summary_large_image">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>AIR Blackbox - EU AI Act Compliance Scanner for Python AI Agents</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        :root {
-            --bg: #0a0a0b;
-            --bg-card: #111113;
-            --bg-card-hover: #18181b;
-            --border: #27272a;
-            --text: #fafafa;
-            --text-muted: #a1a1aa;
-            --text-dim: #71717a;
-            --accent: #f97316;
-            --accent-hover: #fb923c;
-            --accent-glow: rgba(249, 115, 22, 0.15);
-            --green: #22c55e;
-            --red: #ef4444;
-            --yellow: #eab308;
-            --blue: #3b82f6;
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            color: #e2e8f0;
             line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Nav */
-        nav {
+        /* Header & Navigation */
+        header {
             position: fixed;
             top: 0;
             width: 100%;
-            z-index: 100;
-            background: rgba(10, 10, 11, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 24px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            backdrop-filter: blur(10px);
         }
-        .nav-inner {
-            max-width: 1200px;
+
+        nav {
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 1rem 2rem;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            height: 64px;
+            align-items: center;
         }
-        .nav-logo {
+
+        .logo {
+            font-size: 1.5rem;
             font-weight: 800;
-            font-size: 18px;
-            letter-spacing: -0.5px;
-            color: var(--text);
-            text-decoration: none;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .nav-logo span { color: var(--accent); }
-        .nav-links { display: flex; gap: 28px; align-items: center; }
-        .nav-links a {
-            color: var(--text-muted);
+
+        nav a {
+            color: #94a3b8;
             text-decoration: none;
-            font-size: 14px;
+            margin-left: 2rem;
+            transition: color 0.3s ease;
             font-weight: 500;
-            transition: color 0.2s;
         }
-        .nav-links a:hover { color: var(--text); }
-        .nav-cta {
-            background: var(--accent) !important;
-            color: #000 !important;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px !important;
-            transition: background 0.2s;
-        }
-        .nav-cta:hover { background: var(--accent-hover) !important; }
 
-        /* Dropdown */
-        .nav-dropdown { position: relative; }
-        .nav-dropdown-toggle {
-            color: var(--text-muted); font-size: 14px; font-weight: 500;
-            cursor: pointer; background: none; border: none; font-family: inherit;
-            display: flex; align-items: center; gap: 4px; transition: color .2s; padding: 0;
+        nav a:hover {
+            color: #3b82f6;
         }
-        .nav-dropdown-toggle:hover { color: var(--text); }
-        .nav-dropdown-toggle svg { width: 12px; height: 12px; transition: transform .2s; }
-        .nav-dropdown.open .nav-dropdown-toggle svg { transform: rotate(180deg); }
-        .nav-dropdown-menu {
-            position: absolute; top: calc(100% + 12px); right: 0;
-            background: #18181b; border: 1px solid var(--border); border-radius: 12px;
-            padding: 8px 0; min-width: 180px; opacity: 0; visibility: hidden;
-            transform: translateY(-8px); transition: all .2s; z-index: 200;
-            box-shadow: 0 8px 30px rgba(0,0,0,.5);
-        }
-        .nav-dropdown.open .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
-        .nav-dropdown-menu a {
-            display: block; padding: 9px 18px; color: var(--text-muted);
-            text-decoration: none; font-size: 13px; font-weight: 500; transition: all .15s;
-        }
-        .nav-dropdown-menu a:hover { color: var(--text); background: rgba(255,255,255,.05); }
 
-        /* Sections */
-        section { padding: 100px 24px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-
-        /* Hero */
+        /* Hero Section */
         .hero {
-            padding: 160px 24px 100px;
+            margin-top: 80px;
+            padding: 6rem 2rem;
             text-align: center;
             position: relative;
+            overflow: hidden;
         }
+
         .hero::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 600px;
-            background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .deadline-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            padding: 8px 20px;
-            border-radius: 100px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 32px;
-            position: relative;
-        }
-        .deadline-badge .pulse {
-            width: 8px;
-            height: 8px;
-            background: var(--red);
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
             border-radius: 50%;
-            animation: pulse 2s infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
         }
-        h1 {
-            font-size: clamp(40px, 6vw, 72px);
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
             font-weight: 800;
-            letter-spacing: -2px;
-            line-height: 1.05;
-            margin-bottom: 24px;
-        }
-        h1 .highlight { color: var(--accent); }
-        .hero-sub {
-            font-size: 20px;
-            color: var(--text-muted);
-            max-width: 640px;
-            margin: 0 auto 48px;
-            line-height: 1.6;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.8s ease;
         }
 
-        /* Scanner CTA */
-        .scanner-block {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 620px;
-            margin: 0 auto 32px;
-            text-align: left;
-        }
-        .scanner-label {
-            font-size: 13px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        .scanner-cmd {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
-            color: var(--green);
-            background: rgba(34, 197, 94, 0.08);
-            padding: 16px 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(34, 197, 94, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .scanner-cmd:hover { border-color: rgba(34, 197, 94, 0.4); }
-        .scanner-cmd .copy-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 13px;
-            font-family: 'Inter', sans-serif;
-            transition: color 0.2s;
-        }
-        .scanner-cmd .copy-btn:hover { color: var(--text); }
-        .scanner-hint {
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-top: 12px;
+        .hero-stat {
+            color: #ef4444;
+            font-size: 3.5rem;
+            font-weight: 800;
         }
 
-        /* Hero buttons */
-        .hero-buttons {
+        .hero p {
+            font-size: 1.25rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease 0.1s backwards;
+        }
+
+        .hero-actions {
             display: flex;
-            gap: 16px;
+            gap: 1rem;
             justify-content: center;
             flex-wrap: wrap;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
         }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 14px 28px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            border: none;
+
+        .copy-box {
+            background: #1e293b;
+            border: 1px solid #3b82f6;
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            font-family: 'Courier New', monospace;
+            color: #3b82f6;
+            font-size: 0.95rem;
             cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            flex: 1;
+            min-width: 280px;
+            max-width: 400px;
         }
+
+        .copy-box:hover {
+            background: #3b82f6;
+            color: #0f172a;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
         .btn-primary {
-            background: var(--accent);
-            color: #000;
+            background: #3b82f6;
+            color: #0f172a;
         }
-        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        .btn-primary:hover {
+            background: #60a5fa;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
         .btn-secondary {
             background: transparent;
-            color: var(--text);
-            border: 1px solid var(--border);
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
         }
-        .btn-secondary:hover { border-color: var(--text-dim); background: var(--bg-card); }
-        .btn svg { width: 18px; height: 18px; }
 
-        /* Countdown */
-        .countdown {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-top: 48px;
+        .btn-secondary:hover {
+            background: #3b82f6;
+            color: #0f172a;
         }
-        .countdown-item {
+
+        /* Social Proof Bar */
+        .social-proof {
+            background: rgba(59, 130, 246, 0.05);
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 2rem;
             text-align: center;
         }
-        .countdown-num {
-            font-size: 36px;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-            color: var(--text);
-            letter-spacing: -1px;
+
+        .proof-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
         }
-        .countdown-label {
-            font-size: 12px;
-            color: var(--text-dim);
+
+        .proof-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .proof-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
         }
 
-        /* Scanner output section */
-        .scanner-demo {
-            background: var(--bg-card);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .scanner-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        .scanner-dot {
-            width: 12px; height: 12px;
-            border-radius: 50%;
-        }
-        .scanner-dot.r { background: #ef4444; }
-        .scanner-dot.y { background: #eab308; }
-        .scanner-dot.g { background: #22c55e; }
-        .scanner-title {
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-left: 8px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .scanner-body {
-            padding: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            line-height: 2;
-        }
-        .scanner-body .pass { color: var(--green); }
-        .scanner-body .fail { color: var(--red); }
-        .scanner-body .warn { color: var(--yellow); }
-        .scanner-body .dim { color: var(--text-dim); }
-        .scanner-body .bright { color: var(--text); font-weight: 600; }
-
-        /* Features grid */
-        .features-header {
-            text-align: center;
-            margin-bottom: 64px;
-        }
-        .features-header h2 {
-            font-size: 40px;
-            font-weight: 800;
-            letter-spacing: -1.5px;
-            margin-bottom: 16px;
-        }
-        .features-header p {
-            color: var(--text-muted);
-            font-size: 18px;
-            max-width: 560px;
-            margin: 0 auto;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            transition: all 0.3s;
-        }
-        .feature-card:hover {
-            border-color: var(--accent);
-            background: var(--bg-card-hover);
-            transform: translateY(-2px);
-        }
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .feature-card h3 {
-            font-size: 18px;
+        .proof-stat {
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.3px;
+            color: #3b82f6;
         }
-        .feature-card p {
-            color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1.6;
+
+        /* Article Failure Rates */
+        .section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
         }
-        .feature-tag {
-            display: inline-block;
-            font-size: 11px;
+
+        .section h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+            font-size: 1.05rem;
+        }
+
+        .article-rates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .rate-item {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .rate-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            margin-top: 16px;
         }
-        .tag-art9 { background: rgba(59, 130, 246, 0.1); color: #93c5fd; }
-        .tag-art10 { background: rgba(168, 85, 247, 0.1); color: #c4b5fd; }
-        .tag-art11 { background: rgba(34, 197, 94, 0.1); color: #86efac; }
-        .tag-art12 { background: rgba(249, 115, 22, 0.1); color: #fdba74; }
-        .tag-art14 { background: rgba(236, 72, 153, 0.1); color: #f9a8d4; }
-        .tag-art15 { background: rgba(239, 68, 68, 0.1); color: #fca5a5; }
 
-        /* Frameworks */
-        .frameworks {
-            background: var(--bg-card);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
+        .rate-label-text {
+            color: #cbd5e1;
         }
-        .fw-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-top: 48px;
-        }
-        .fw-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .fw-card:hover { border-color: var(--accent); }
-        .fw-name {
-            font-size: 16px;
+
+        .rate-percentage {
+            color: #ef4444;
             font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .fw-pkg {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-bottom: 12px;
-        }
-        .fw-install {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--green);
-            background: rgba(34, 197, 94, 0.06);
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(34, 197, 94, 0.1);
         }
 
-        /* Code example */
-        .code-section { text-align: center; }
-        .code-section h2 {
-            font-size: 40px;
-            font-weight: 800;
-            letter-spacing: -1.5px;
-            margin-bottom: 16px;
-        }
-        .code-section > p {
-            color: var(--text-muted);
-            font-size: 18px;
-            margin-bottom: 48px;
-        }
-        .code-block {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
+        .bar-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 0.25rem;
+            height: 8px;
             overflow: hidden;
-            text-align: left;
-            max-width: 700px;
-            margin: 0 auto;
         }
-        .code-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border);
-        }
-        .code-tab {
-            padding: 12px 24px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dim);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-            background: none;
-            border-top: none;
-            border-left: none;
-            border-right: none;
-        }
-        .code-tab.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
-        .code-content {
-            padding: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            line-height: 1.8;
-            overflow-x: auto;
-        }
-        .code-content .comment { color: var(--text-dim); }
-        .code-content .keyword { color: #c084fc; }
-        .code-content .string { color: #86efac; }
-        .code-content .func { color: #93c5fd; }
-        .code-content .var { color: var(--text); }
-        .code-panel { display: none; }
-        .code-panel.active { display: block; }
 
-        /* Articles */
-        .articles-grid {
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            border-radius: 0.25rem;
+            width: 0;
+            animation: barFill 1s ease-out forwards;
+        }
+
+        .bar:nth-child(1) { animation-delay: 0.1s; }
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.3s; }
+        .bar:nth-child(4) { animation-delay: 0.4s; }
+        .bar:nth-child(5) { animation-delay: 0.5s; }
+        .bar:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes barFill {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+            to {
+                width: var(--fill);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Score Distribution */
+        .distribution {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 1rem;
+            margin: 3rem 0;
+            min-height: 300px;
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .score-column {
+            flex: 1;
+            min-width: 50px;
+            max-width: 80px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            min-height: 250px;
+        }
+
+        .score-bar {
+            width: 100%;
+            background: linear-gradient(180deg, #3b82f6, #60a5fa);
+            border-radius: 0.25rem 0.25rem 0 0;
+            transition: all 0.5s ease;
+            opacity: 0;
+            animation: barGrowUp 1s ease-out forwards;
+        }
+
+        .score-bar:hover {
+            background: linear-gradient(180deg, #60a5fa, #93c5fd);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .score-label {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+
+        .score-value {
+            color: #3b82f6;
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        @keyframes barGrowUp {
+            from {
+                height: 0;
+                opacity: 0;
+            }
+            to {
+                height: var(--height);
+                opacity: 1;
+            }
+        }
+
+        /* Project Results Table */
+        .table-container {
+            overflow-x: auto;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .score-cell {
+            font-weight: 700;
+            color: #3b82f6;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* How It Works */
+        .how-it-works {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-top: 48px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
         }
-        .article-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            transition: border-color 0.2s;
+
+        .step {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            position: relative;
         }
-        .article-card:hover { border-color: var(--accent); }
-        .article-num {
-            font-size: 13px;
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            color: #0f172a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 8px;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
         }
-        .article-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 8px;
+
+        .step h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
         }
-        .article-desc {
-            font-size: 13px;
-            color: var(--text-muted);
+
+        .step p {
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .code-block {
+            background: #0f172a;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #60a5fa;
+            overflow-x: auto;
             line-height: 1.5;
         }
 
-        /* Social proof / stats */
-        .stats {
-            text-align: center;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-card);
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 32px;
-        }
-        .stat-num {
-            font-size: 48px;
-            font-weight: 800;
-            letter-spacing: -2px;
-            color: var(--accent);
-        }
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 4px;
+        /* Terminal Demo */
+        .terminal {
+            background: #0f172a;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            color: #60a5fa;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin: 2rem 0;
+            overflow-x: auto;
+            box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
         }
 
-        /* CTA section */
+        .terminal-line {
+            margin-bottom: 0.5rem;
+        }
+
+        .terminal-prompt {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .terminal-output {
+            color: #cbd5e1;
+        }
+
+        .terminal-success {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .terminal-warning {
+            color: #f59e0b;
+        }
+
+        .terminal-error {
+            color: #ef4444;
+        }
+
+        /* CTA Section */
         .cta-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.75rem;
+            padding: 3rem 2rem;
             text-align: center;
-            background: linear-gradient(180deg, var(--bg) 0%, rgba(249, 115, 22, 0.03) 100%);
+            margin: 4rem 0;
         }
+
         .cta-section h2 {
-            font-size: 48px;
-            font-weight: 800;
-            letter-spacing: -2px;
-            margin-bottom: 16px;
+            font-size: 2rem;
+            margin-bottom: 1rem;
         }
+
         .cta-section p {
-            color: var(--text-muted);
-            font-size: 18px;
-            margin-bottom: 40px;
-            max-width: 560px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
         }
-        .cta-buttons {
+
+        .cta-actions {
             display: flex;
-            gap: 16px;
+            gap: 1rem;
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 48px;
-        }
-        .cta-fine {
-            font-size: 14px;
-            color: var(--text-dim);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            background: rgba(239, 68, 68, 0.05);
-            display: inline-block;
-            padding: 12px 24px;
-            border-radius: 8px;
         }
 
         /* Footer */
         footer {
-            padding: 48px 24px;
-            border-top: 1px solid var(--border);
-            text-align: center;
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+            padding: 2rem;
+            margin-top: 4rem;
         }
-        .footer-links {
-            display: flex;
-            gap: 32px;
-            justify-content: center;
-            margin-bottom: 24px;
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
-        .footer-links a {
-            color: var(--text-dim);
+
+        .footer-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+
+        .footer-section a {
+            display: block;
+            color: #94a3b8;
             text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
         }
-        .footer-links a:hover { color: var(--text); }
-        .footer-copy {
-            font-size: 13px;
-            color: var(--text-dim);
+
+        .footer-section a:hover {
+            color: #3b82f6;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+            color: #64748b;
+            font-size: 0.85rem;
         }
 
         /* Responsive */
-        @media (max-width: 900px) {
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .fw-grid { grid-template-columns: repeat(2, 1fr); }
-            .articles-grid { grid-template-columns: repeat(2, 1fr); }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero-stat {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            nav {
+                padding: 1rem;
+            }
+
+            nav a {
+                margin-left: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .section {
+                padding: 3rem 1rem;
+            }
+
+            .section h2 {
+                font-size: 1.5rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+            }
+
+            .copy-box {
+                max-width: 100%;
+            }
+
+            .proof-content {
+                gap: 1rem;
+            }
+
+            .proof-item {
+                min-width: 150px;
+            }
+
+            .cta-actions {
+                flex-direction: column;
+            }
+
+            .cta-section {
+                padding: 2rem 1rem;
+            }
+
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
         }
-        @media (max-width: 600px) {
-            .features-grid { grid-template-columns: 1fr; }
-            .fw-grid { grid-template-columns: 1fr; }
-            .articles-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .nav-links a:not(.nav-cta) { display: none; }
-            .nav-dropdown { display: none; }
-            h1 { font-size: 36px; letter-spacing: -1px; }
-            .countdown { gap: 16px; }
-            .countdown-num { font-size: 28px; }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 4rem 1rem;
+                margin-top: 70px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero-stat {
+                font-size: 1.8rem;
+            }
+
+            .section {
+                padding: 2rem 1rem;
+            }
+
+            .article-rates {
+                grid-template-columns: 1fr;
+            }
+
+            .distribution {
+                min-height: 250px;
+            }
+
+            .score-column {
+                min-height: 200px;
+            }
         }
     </style>
 </head>
 <body>
-
-<!-- Nav -->
-<nav>
-    <div class="nav-inner">
-        <a href="#" class="nav-logo">AIR <span>Blackbox</span></a>
-        <div class="nav-links">
-            <a href="/vaultmind/">VaultMind</a>
-            <a href="#features">Features</a>
-            <div class="nav-dropdown" id="nav-dd">
-                <button class="nav-dropdown-toggle" onclick="document.getElementById('nav-dd').classList.toggle('open')">
-                    Docs <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
-                </button>
-                <div class="nav-dropdown-menu">
-                    <a href="/gate.html">Gate</a>
-                    <a href="#mcp">MCP Server</a>
-                    <a href="#openclaw">OpenClaw</a>
-                    <a href="#frameworks">Frameworks</a>
-                    <a href="#compliance">Compliance</a>
-                    <a href="/compliance-mapping.html">Mapping</a>
-                    <a href="/spec.html">Spec</a>
-                </div>
-            </div>
-            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
-            <a href="#cta" class="nav-cta">Get Started</a>
-        </div>
-    </div>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-    <div class="container">
-        <div class="deadline-badge">
-            <div class="pulse"></div>
-            EU AI Act enforcement: August 2, 2026
-        </div>
-        <h1>Your AI agents need<br><span class="highlight">tamper-proof audit trails</span></h1>
-        <p class="hero-sub">Open-source compliance infrastructure for LangChain, CrewAI, AutoGen, and OpenAI Agents. Drop-in trust layers that make your agents EU AI Act ready.</p>
-
-        <div class="scanner-block">
-            <div class="scanner-label">Find your compliance gaps in 30 seconds</div>
-            <div class="scanner-cmd" onclick="copyCmd(this)">
-                <span>$ pip install air-compliance && air-compliance scan ./my-project</span>
-                <button class="copy-btn">Copy</button>
-            </div>
-            <div class="scanner-hint">Zero dependencies. Works on any Python AI project.</div>
-        </div>
-
-        <div class="hero-buttons">
-            <a href="https://github.com/airblackbox" target="_blank" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                Star on GitHub
-            </a>
-            <a href="#cta" class="btn btn-secondary">Book a Demo</a>
-        </div>
-
-        <!-- Countdown -->
-        <div class="countdown" id="countdown">
-            <div class="countdown-item">
-                <div class="countdown-num" id="cd-days">---</div>
-                <div class="countdown-label">Days</div>
-            </div>
-            <div class="countdown-item">
-                <div class="countdown-num" id="cd-hours">--</div>
-                <div class="countdown-label">Hours</div>
-            </div>
-            <div class="countdown-item">
-                <div class="countdown-num" id="cd-mins">--</div>
-                <div class="countdown-label">Minutes</div>
-            </div>
-            <div class="countdown-item">
-                <div class="countdown-num" id="cd-secs">--</div>
-                <div class="countdown-label">Seconds</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Scanner Demo Output -->
-<section style="padding-top: 0;">
-    <div class="container">
-        <div class="scanner-demo">
-            <div class="scanner-header">
-                <div class="scanner-dot r"></div>
-                <div class="scanner-dot y"></div>
-                <div class="scanner-dot g"></div>
-                <span class="scanner-title">air-compliance scan ./my-agent</span>
-            </div>
-            <div class="scanner-body">
-                <div><span class="bright">EU AI Act Compliance Report</span></div>
-                <div><span class="dim">Project: ./my-agent | Framework: LangChain</span></div>
-                <div style="margin: 8px 0;"><span class="dim">────────────────────────────────────────────</span></div>
-                <div><span class="pass">PASS</span> <span class="bright">Article 9</span> <span class="dim">— Risk Management ........... 4/4</span></div>
-                <div><span class="pass">PASS</span> <span class="bright">Article 10</span> <span class="dim">— Data Governance .......... 3/3</span></div>
-                <div><span class="pass">PASS</span> <span class="bright">Article 11</span> <span class="dim">— Technical Documentation .. 3/3</span></div>
-                <div><span class="fail">FAIL</span> <span class="bright">Article 12</span> <span class="dim">— Record-Keeping ........... 1/4</span></div>
-                <div><span class="warn">WARN</span> <span class="bright">Article 14</span> <span class="dim">— Human Oversight .......... 2/4</span></div>
-                <div><span class="fail">FAIL</span> <span class="bright">Article 15</span> <span class="dim">— Robustness & Security .... 1/4</span></div>
-                <div style="margin: 8px 0;"><span class="dim">────────────────────────────────────────────</span></div>
-                <div><span class="bright">Coverage: 63%</span> <span class="dim">| 14/22 checks passing</span></div>
-                <div><span class="fail">CRITICAL:</span> <span class="dim">HMAC-SHA256 chain not configured (Article 12)</span></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats -->
-<section class="stats">
-    <div class="container">
-        <div class="stats-grid">
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">AIR Blackbox</div>
             <div>
-                <div class="stat-num">9</div>
-                <div class="stat-label">PyPI Packages</div>
+                <a href="#how-it-works">Docs</a>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank">GitHub</a>
+                <a href="https://pypi.org/project/air-blackbox-mcp/" target="_blank">PyPI</a>
             </div>
-            <div>
-                <div class="stat-num">25</div>
-                <div class="stat-label">Open Source Repos</div>
-            </div>
-            <div>
-                <div class="stat-num">6</div>
-                <div class="stat-label">EU AI Act Articles</div>
-            </div>
-            <div>
-                <div class="stat-num">0</div>
-                <div class="stat-label">Core Dependencies</div>
-            </div>
-        </div>
-    </div>
-</section>
+        </nav>
+    </header>
 
-<!-- Features -->
-<section id="features">
-    <div class="container">
-        <div class="features-header">
-            <h2>Everything agents need to comply</h2>
-            <p>Six security and compliance controls that map directly to EU AI Act articles.</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon" style="background: rgba(249, 115, 22, 0.1);">&#x1f512;</div>
-                <h3>Tamper-Evident Audit Chain</h3>
-                <p>HMAC-SHA256 signed, cryptographically chained logs. Every agent decision is recorded in a chain regulators can mathematically verify.</p>
-                <span class="feature-tag tag-art12">Article 12</span>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background: rgba(168, 85, 247, 0.1);">&#x1f6e1;</div>
-                <h3>PII Tokenization</h3>
-                <p>20+ built-in detection patterns automatically redact PII across recruiting, finance, healthcare, and legal verticals — emails, SSNs, credit cards, MRNs, case numbers, and more — before they reach the LLM.</p>
-                <span class="feature-tag tag-art10">Article 10</span>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background: rgba(59, 130, 246, 0.1);">&#x26a0;&#xfe0f;</div>
-                <h3>Consent Gate</h3>
-                <p>Risk-classifies every tool call. Blocks critical operations until approved. Humans stay in control of what the agent can do.</p>
-                <span class="feature-tag tag-art14">Article 14</span>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background: rgba(239, 68, 68, 0.1);">&#x1f6a8;</div>
-                <h3>Injection Detection</h3>
-                <p>15+ weighted patterns scan every prompt for injection attacks, jailbreaks, role overrides, and data exfiltration attempts.</p>
-                <span class="feature-tag tag-art15">Article 15</span>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background: rgba(34, 197, 94, 0.1);">&#x1f4da;</div>
-                <h3>RAG Write Gate</h3>
-                <p>Source allowlists, content pattern blocking, and rate limits protect your knowledge base from poisoning attacks.</p>
-                <span class="feature-tag tag-art15">Article 15</span>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background: rgba(236, 72, 153, 0.1);">&#x1f4c8;</div>
-                <h3>Drift Detection</h3>
-                <p>Real-time monitoring for retrieval anomalies: new untrusted sources, trust level shifts, volume spikes, and document dominance.</p>
-                <span class="feature-tag tag-art15">Article 15</span>
-            </div>
-        </div>
-    </div>
-</section>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>
+                <span class="hero-stat">97%</span> of AI Agent Code Fails EU AI Act Compliance
+            </h1>
+            <p>We scanned 5,754 files across 11 major open-source projects. Here's what we found.</p>
 
-<!-- Frameworks -->
-<section class="frameworks" id="frameworks">
-    <div class="container">
-        <div class="features-header">
-            <h2>Every major framework. One pip install.</h2>
-            <p>Drop-in trust layers that hook into your existing agent code with 3 lines of setup.</p>
-        </div>
-        <div class="fw-grid">
-            <div class="fw-card">
-                <div class="fw-name">LangChain</div>
-                <div class="fw-pkg">LangGraph</div>
-                <div class="fw-install">pip install air-langchain-trust</div>
-            </div>
-            <div class="fw-card">
-                <div class="fw-name">CrewAI</div>
-                <div class="fw-pkg">Multi-agent</div>
-                <div class="fw-install">pip install air-crewai-trust</div>
-            </div>
-            <div class="fw-card">
-                <div class="fw-name">OpenAI Agents</div>
-                <div class="fw-pkg">Agents SDK</div>
-                <div class="fw-install">pip install air-openai-agents-trust</div>
-            </div>
-            <div class="fw-card">
-                <div class="fw-name">AutoGen</div>
-                <div class="fw-pkg">AG2</div>
-                <div class="fw-install">pip install air-autogen-trust</div>
-            </div>
-            <div class="fw-card">
-                <div class="fw-name">RAG Pipelines</div>
-                <div class="fw-pkg">Knowledge Bases</div>
-                <div class="fw-install">pip install air-rag-trust</div>
-            </div>
-            <div class="fw-card">
-                <div class="fw-name">TypeScript</div>
-                <div class="fw-pkg">Node.js</div>
-                <div class="fw-install">npm i openclaw-air-trust</div>
-            </div>
-            <div class="fw-card">
-                <div class="fw-name">Compliance</div>
-                <div class="fw-pkg">Scanner</div>
-                <div class="fw-install">pip install air-compliance</div>
-            </div>
-            <div class="fw-card" style="border-color: var(--accent); background: rgba(249, 115, 22, 0.03);">
-                <div class="fw-name">MCP Server</div>
-                <div class="fw-pkg">Claude Desktop / Cursor</div>
-                <div class="fw-install">pip install air-blackbox-mcp</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Code Example -->
-<section class="code-section" id="code">
-    <div class="container">
-        <h2>3 lines to comply</h2>
-        <p>Add tamper-evident auditing, PII protection, and injection defense to any framework.</p>
-        <div class="code-block">
-            <div class="code-tabs">
-                <button class="code-tab active" onclick="showTab('langchain')">LangChain</button>
-                <button class="code-tab" onclick="showTab('crewai')">CrewAI</button>
-                <button class="code-tab" onclick="showTab('openai')">OpenAI Agents</button>
-                <button class="code-tab" onclick="showTab('rag')">RAG</button>
-            </div>
-            <div class="code-content">
-                <div class="code-panel active" id="panel-langchain">
-<span class="keyword">from</span> <span class="var">air_langchain_trust</span> <span class="keyword">import</span> <span class="func">AirTrustCallbackHandler</span>
-
-<span class="comment"># One handler. Full compliance.</span>
-<span class="var">handler</span> = <span class="func">AirTrustCallbackHandler</span>()
-
-<span class="comment"># Every LLM call, tool use, and chain step gets</span>
-<span class="comment"># logged to a tamper-evident HMAC-SHA256 chain.</span>
-<span class="var">result</span> = <span class="var">agent</span>.<span class="func">invoke</span>(
-    {<span class="string">"input"</span>: <span class="var">query</span>},
-    <span class="var">config</span>={<span class="string">"callbacks"</span>: [<span class="var">handler</span>]}
-)
-
-<span class="comment"># Auditors verify the chain hasn't been tampered with</span>
-<span class="var">handler</span>.<span class="func">verify_chain</span>()  <span class="comment"># True</span>
+            <div class="hero-actions">
+                <div class="copy-box" onclick="copyToClipboard(this)">
+                    pip install air-blackbox-mcp
                 </div>
-                <div class="code-panel" id="panel-crewai">
-<span class="keyword">from</span> <span class="var">air_crewai_trust</span> <span class="keyword">import</span> <span class="func">AirTrustHook</span>, <span class="func">AirTrustConfig</span>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
 
-<span class="comment"># Configure trust controls</span>
-<span class="var">hook</span> = <span class="func">AirTrustHook</span>(<span class="var">config</span>=<span class="func">AirTrustConfig</span>())
+    <!-- Social Proof Bar -->
+    <section class="social-proof">
+        <div class="proof-content">
+            <div class="proof-item">
+                <div class="proof-label">Files Scanned</div>
+                <div class="proof-stat">5,754</div>
+            </div>
+            <div class="proof-item">
+                <div class="proof-label">Projects Analyzed</div>
+                <div class="proof-stat">11</div>
+            </div>
+            <div class="proof-item">
+                <div class="proof-label">Major Open-Source</div>
+                <div class="proof-stat">AI Projects</div>
+            </div>
+            <div class="proof-item">
+                <div class="proof-label">EU AI Act Deadline</div>
+                <div class="proof-stat">August 2026</div>
+            </div>
+        </div>
+    </section>
 
-<span class="comment"># Attach to any crew — all agent actions</span>
-<span class="comment"># are now audited and protected.</span>
-<span class="var">crew</span> = <span class="func">Crew</span>(
-    <span class="var">agents</span>=[<span class="var">researcher</span>, <span class="var">writer</span>],
-    <span class="var">hooks</span>=[<span class="var">hook</span>]
-)
+    <!-- Article Failure Rates -->
+    <section class="section">
+        <h2>Why They're Failing</h2>
+        <p class="section-subtitle">Breakdown of Article 9-15 compliance failures across all scanned files</p>
 
-<span class="var">crew</span>.<span class="func">kickoff</span>()
+        <div class="article-rates">
+            <div class="rate-item">
+                <div class="rate-label">
+                    <span class="rate-label-text">Article 9: Risk Management</span>
+                    <span class="rate-percentage">97%</span>
                 </div>
-                <div class="code-panel" id="panel-openai">
-<span class="keyword">from</span> <span class="var">air_openai_agents_trust</span> <span class="keyword">import</span> <span class="func">activate_trust</span>
-
-<span class="comment"># One call. Patches the SDK globally.</span>
-<span class="func">activate_trust</span>()
-
-<span class="comment"># Every agent run is now protected with</span>
-<span class="comment"># audit trails, PII tokenization, and</span>
-<span class="comment"># injection detection.</span>
-<span class="var">result</span> = <span class="keyword">await</span> <span class="func">Runner</span>.<span class="func">run</span>(
-    <span class="var">agent</span>,
-    <span class="string">"Analyze quarterly revenue data"</span>
-)
+                <div class="bar-container">
+                    <div class="bar" style="--fill: 97%"></div>
                 </div>
-                <div class="code-panel" id="panel-rag">
-<span class="keyword">from</span> <span class="var">air_rag_trust</span> <span class="keyword">import</span> <span class="func">AirRagTrust</span>, <span class="func">WritePolicy</span>
+            </div>
 
-<span class="comment"># Gate what enters your knowledge base</span>
-<span class="var">rag</span> = <span class="func">AirRagTrust</span>(<span class="var">write_policy</span>=<span class="func">WritePolicy</span>(
-    <span class="var">allowed_sources</span>=[<span class="string">"internal://*"</span>],
-    <span class="var">blocked_content_patterns</span>=[<span class="string">r"ignore previous"</span>],
-))
+            <div class="rate-item">
+                <div class="rate-label">
+                    <span class="rate-label-text">Article 10: Data & Governance</span>
+                    <span class="rate-percentage">61%</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar" style="--fill: 61%"></div>
+                </div>
+            </div>
 
-<span class="comment"># Every document gets SHA-256 provenance</span>
-<span class="var">rag</span>.<span class="func">ingest</span>(<span class="var">content</span>=<span class="var">doc</span>, <span class="var">source</span>=<span class="string">"internal://kb"</span>)
+            <div class="rate-item">
+                <div class="rate-label">
+                    <span class="rate-label-text">Article 11: Technical Documentation</span>
+                    <span class="rate-percentage">2%</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar" style="--fill: 2%"></div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="rate-label">
+                    <span class="rate-label-text">Article 12: Record-Keeping</span>
+                    <span class="rate-percentage">89%</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar" style="--fill: 89%"></div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="rate-label">
+                    <span class="rate-label-text">Article 14: Human Oversight</span>
+                    <span class="rate-percentage">84%</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar" style="--fill: 84%"></div>
+                </div>
+            </div>
+
+            <div class="rate-item">
+                <div class="rate-label">
+                    <span class="rate-label-text">Article 15: Accuracy, Robustness & Cybersecurity</span>
+                    <span class="rate-percentage">48%</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar" style="--fill: 48%"></div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- EU AI Act Articles -->
-<section id="compliance">
-    <div class="container">
-        <div class="features-header">
-            <h2>Mapped to the regulation</h2>
-            <p>Every control maps directly to a specific EU AI Act article. No guesswork.</p>
-        </div>
-        <div class="articles-grid">
-            <div class="article-card">
-                <div class="article-num">Article 9</div>
-                <div class="article-title">Risk Management</div>
-                <div class="article-desc">ConsentGate classifies tool calls by risk level (LOW → CRITICAL) and enforces blocking policies.</div>
-            </div>
-            <div class="article-card">
-                <div class="article-num">Article 10</div>
-                <div class="article-title">Data Governance</div>
-                <div class="article-desc">PIIRedactionPolicy auto-redacts 20+ categories across recruiting, finance (PCI-DSS), healthcare (HIPAA), and legal verticals. Every event embeds a GDPR Art. 30 manifest with erasure support.</div>
-            </div>
-            <div class="article-card">
-                <div class="article-num">Article 11</div>
-                <div class="article-title">Technical Documentation</div>
-                <div class="article-desc">Structured audit logging captures full call graphs: chain → LLM → tool → result.</div>
-            </div>
-            <div class="article-card">
-                <div class="article-num">Article 12</div>
-                <div class="article-title">Record-Keeping</div>
-                <div class="article-desc">HMAC-SHA256 tamper-evident chains. Every entry is cryptographically signed and linked to the previous one.</div>
-            </div>
-            <div class="article-card">
-                <div class="article-num">Article 14</div>
-                <div class="article-title">Human Oversight</div>
-                <div class="article-desc">Exception-based blocking interrupts agent execution. Full audit trails enable post-hoc review.</div>
-            </div>
-            <div class="article-card">
-                <div class="article-num">Article 15</div>
-                <div class="article-title">Robustness & Security</div>
-                <div class="article-desc">InjectionDetector, WriteGate, and DriftDetector provide defense-in-depth against adversarial attacks.</div>
-            </div>
-        </div>
-    </div>
-</section>
+    <!-- Score Distribution -->
+    <section class="section">
+        <h2>Compliance Score Distribution</h2>
+        <p class="section-subtitle">Only 23 files (0.4%) achieve perfect compliance across all 6 articles</p>
 
-<!-- MCP Server -->
-<section id="mcp" style="border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-card);">
-    <div class="container">
-        <div class="features-header">
-            <h2>Now in Claude Desktop & Cursor</h2>
-            <p>10 compliance tools — directly in your AI coding assistant. Scan, analyze, and fix without leaving the editor.</p>
+        <div class="distribution">
+            <div class="score-column">
+                <div class="score-bar" style="--height: 10px"></div>
+                <div class="score-label">0/6</div>
+                <div class="score-value">100 (1.7%)</div>
+            </div>
+            <div class="score-column">
+                <div class="score-bar" style="--height: 200px"></div>
+                <div class="score-label">1/6</div>
+                <div class="score-value">1,872 (32.5%)</div>
+            </div>
+            <div class="score-column">
+                <div class="score-bar" style="--height: 178px"></div>
+                <div class="score-label">2/6</div>
+                <div class="score-value">1,667 (29.0%)</div>
+            </div>
+            <div class="score-column">
+                <div class="score-bar" style="--height: 138px"></div>
+                <div class="score-label">3/6</div>
+                <div class="score-value">1,294 (22.5%)</div>
+            </div>
+            <div class="score-column">
+                <div class="score-bar" style="--height: 64px"></div>
+                <div class="score-label">4/6</div>
+                <div class="score-value">597 (10.4%)</div>
+            </div>
+            <div class="score-column">
+                <div class="score-bar" style="--height: 22px"></div>
+                <div class="score-label">5/6</div>
+                <div class="score-value">201 (3.5%)</div>
+            </div>
+            <div class="score-column">
+                <div class="score-bar" style="--height: 3px"></div>
+                <div class="score-label">6/6</div>
+                <div class="score-value">23 (0.4%)</div>
+            </div>
         </div>
-        <div class="scanner-block" style="max-width: 700px;">
-            <div class="scanner-label">Install the MCP Server</div>
-            <div class="scanner-cmd" onclick="copyMcp(this)">
-                <span>$ pip install air-blackbox-mcp</span>
-                <button class="copy-btn">Copy</button>
-            </div>
-            <div class="scanner-hint">Then add to Claude Desktop config and restart. <a href="https://github.com/airblackbox/air-blackbox-mcp#quick-start" target="_blank" style="color: var(--accent);">Setup guide &rarr;</a></div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 700px; margin: 32px auto 0;">
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">SCANNING</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">scan_code &middot; scan_file &middot; scan_project</div>
-            </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">ANALYSIS</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">analyze_with_model &middot; check_prompt_injection &middot; classify_risk</div>
-            </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">REMEDIATION</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">add_trust_layer &middot; suggest_fix</div>
-            </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">DOCUMENTATION</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">explain_article &middot; generate_compliance_report</div>
-            </div>
-        </div>
-        <div style="text-align: center; margin-top: 32px;">
-            <a href="https://github.com/airblackbox/air-blackbox-mcp" target="_blank" class="btn btn-secondary" style="font-size: 14px;">View on GitHub &rarr;</a>
-            <a href="https://pypi.org/project/air-blackbox-mcp/" target="_blank" class="btn btn-secondary" style="font-size: 14px; margin-left: 12px;">View on PyPI &rarr;</a>
-        </div>
-    </div>
-</section>
+    </section>
 
-<!-- OpenClaw Plugin -->
-<section class="features-section" id="openclaw" style="padding: 80px 0;">
-    <div class="container">
-        <div class="features-header">
-            <h2>Now in OpenClaw</h2>
-            <p>The only EU AI Act compliance plugin for the world's most popular autonomous AI agent. 210K+ GitHub stars. Zero compliance — until now.</p>
+    <!-- Project Results Table -->
+    <section class="section">
+        <h2>Per-Project Results</h2>
+        <p class="section-subtitle">Average compliance scores by repository</p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>GitHub Stars</th>
+                        <th>Files Scanned</th>
+                        <th>Avg Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>AutoGPT</strong></td>
+                        <td>170K</td>
+                        <td>403</td>
+                        <td class="score-cell">2.9/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Microsoft AutoGen</strong></td>
+                        <td>38K</td>
+                        <td>246</td>
+                        <td class="score-cell">2.7/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LlamaIndex</strong></td>
+                        <td>37K</td>
+                        <td>1,420</td>
+                        <td class="score-cell">2.4/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mem0</strong></td>
+                        <td>24K</td>
+                        <td>231</td>
+                        <td class="score-cell">2.3/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phidata</strong></td>
+                        <td>18K</td>
+                        <td>1,846</td>
+                        <td class="score-cell">1.6/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LiteLLM</strong></td>
+                        <td>15K</td>
+                        <td>902</td>
+                        <td class="score-cell">2.6/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>GPT-Researcher</strong></td>
+                        <td>14K</td>
+                        <td>82</td>
+                        <td class="score-cell">2.2/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Embedchain</strong></td>
+                        <td>9.2K</td>
+                        <td>231</td>
+                        <td class="score-cell">2.3/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LangGraph</strong></td>
+                        <td>8.5K</td>
+                        <td>99</td>
+                        <td class="score-cell">2.8/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>OpenAI Agents SDK</strong></td>
+                        <td>5.2K</td>
+                        <td>218</td>
+                        <td class="score-cell">2.3/6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CrewAI Examples</strong></td>
+                        <td>2.8K</td>
+                        <td>76</td>
+                        <td class="score-cell">1.4/6</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="scanner-block" style="max-width: 700px;">
-            <div class="scanner-label" style="color: var(--green);">OpenClaw Plugin</div>
-            <div class="scanner-cmd" id="openclaw-cmd">npm install openclaw-air-trust</div>
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install openclaw-air-trust');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 700px; margin: 32px auto 0;">
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">AUDIT</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">HMAC-SHA256 tamper-evident chain of every agent action</div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section" id="how-it-works">
+        <h2>How It Works</h2>
+        <p class="section-subtitle">Get your compliance score in minutes</p>
+
+        <div class="how-it-works">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Install</h3>
+                <p>Add AIR Blackbox to your project with a single pip command.</p>
+                <div class="code-block">pip install air-blackbox-mcp</div>
             </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">CONSENT</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">Human approval gates for destructive tool calls</div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Scan</h3>
+                <p>Run the scanner against your Python AI agent codebase to detect compliance gaps.</p>
+                <div class="code-block">from air_blackbox_mcp.scanner import scan_code<br>result = scan_code(open("your_agent.py").read())<br>print(result["compliance_score"])</div>
             </div>
-            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 8px;">PROTECT</div>
-                <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">Injection detection &middot; PII tokenization &middot; Risk scoring</div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Fix</h3>
+                <p>Get remediation guidance and trust layer code for each failing article.</p>
+                <div class="code-block">from air_blackbox_mcp import add_trust_layer<br>fixed_code = add_trust_layer(code, framework="langchain")</div>
             </div>
         </div>
-        <div style="text-align: center; margin-top: 32px;">
-            <a href="https://github.com/airblackbox/openclaw-air-trust" target="_blank" class="btn btn-secondary" style="font-size: 14px;">View on GitHub &rarr;</a>
-            <a href="https://www.npmjs.com/package/openclaw-air-trust" target="_blank" class="btn btn-secondary" style="font-size: 14px; margin-left: 12px;">View on npm &rarr;</a>
+    </section>
+
+    <!-- Terminal Demo -->
+    <section class="section">
+        <h2>See It In Action</h2>
+        <p class="section-subtitle">Example scan output on a typical AI agent project</p>
+
+        <div class="terminal">
+            <div class="terminal-line"><span class="terminal-prompt">$</span> air-scan --path ./agents</div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-output">╭─────────────────────────────────────────────────────────╮</span></div>
+            <div class="terminal-line"><span class="terminal-output">│ AIR Blackbox - EU AI Act Compliance Scanner              │</span></div>
+            <div class="terminal-line"><span class="terminal-output">│ v2.1.0 | air-blackbox.ai                                │</span></div>
+            <div class="terminal-line"><span class="terminal-output">╰─────────────────────────────────────────────────────────╯</span></div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-output">Scanning: /agents (156 Python files)</span></div>
+            <div class="terminal-line"><span class="terminal-output">Framework detected: LangChain</span></div>
+            <div class="terminal-line"><span class="terminal-output">Articles to check: 9, 10, 11, 12, 14, 15</span></div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-output">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95% [156/156 files scanned]</span></div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-success">✓ Scan complete</span></div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-output">OVERALL COMPLIANCE SCORE: 2.2 / 6.0</span></div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-warning">Article 9  (Risk Management)     │ ✗ FAIL │ 1/6 checks passed</span></div>
+            <div class="terminal-line"><span class="terminal-warning">Article 10 (Data & Governance)   │ ✗ FAIL │ 0/6 checks passed</span></div>
+            <div class="terminal-line"><span class="terminal-warning">Article 11 (Testing & Docs)     │ ✗ FAIL │ 2/6 checks passed</span></div>
+            <div class="terminal-line"><span class="terminal-warning">Article 12 (Record-Keeping)     │ ✗ FAIL │ 1/6 checks passed</span></div>
+            <div class="terminal-line"><span class="terminal-error">Article 14 (Human Oversight)    │ ✗ FAIL │ 0/6 checks passed</span></div>
+            <div class="terminal-line"><span class="terminal-warning">Article 15 (Transparency)       │ ✗ FAIL │ 2/6 checks passed</span></div>
+            <div class="terminal-line"></div>
+            <div class="terminal-line"><span class="terminal-output">Run 'air-fix --article 9' for remediation guidance</span></div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- CTA -->
-<section class="cta-section" id="cta">
-    <div class="container">
-        <h2>5 months left</h2>
-        <p>The code changes to get compliant are small. The risk of not making them is not.</p>
+    <!-- CTA Section -->
+    <section class="section">
+        <div class="cta-section">
+            <h2>August 2026 is coming.</h2>
+            <p>Start scanning your AI agents today. Compliance won't build itself.</p>
 
-        <!-- Email capture -->
-        <div id="waitlist-form" style="max-width: 480px; margin: 32px auto;">
-            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">Get notified when we ship new compliance tools, framework integrations, and the Hugging Face model.</p>
-            <form action="https://formspree.io/f/xpwzgvkl" method="POST" style="display: flex; gap: 8px;" id="email-form">
-                <input type="email" name="email" placeholder="your@email.com" required
-                    style="flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 14px; font-family: Inter, sans-serif; outline: none;"
-                    onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
-                <input type="hidden" name="_subject" value="AIR Blackbox — New Signup" />
-                <button type="submit"
-                    style="padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-weight: 600; font-size: 14px; cursor: pointer; font-family: Inter, sans-serif; white-space: nowrap;"
-                    onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">
-                    Notify Me
-                </button>
-            </form>
-            <p id="form-success" style="display: none; font-size: 13px; color: var(--green); margin-top: 8px;">You're on the list. We'll keep you posted.</p>
+            <div class="cta-actions">
+                <div class="copy-box" onclick="copyToClipboard(this)" style="flex: 0; min-width: auto; max-width: 100%;">
+                    pip install air-blackbox-mcp
+                </div>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank" class="btn btn-secondary">View Full Report</a>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank" class="btn btn-primary">Get Started</a>
+            </div>
         </div>
+    </section>
 
-        <div class="cta-buttons">
-            <a href="https://github.com/airblackbox" target="_blank" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                Star on GitHub
-            </a>
-            <a href="mailto:jason@airblackbox.ai?subject=AIR%20Blackbox%20Demo%20Request" class="btn btn-secondary">Book a Demo</a>
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank">GitHub Repository</a>
+                <a href="https://pypi.org/project/air-blackbox-mcp/" target="_blank">PyPI Package</a>
+                <a href="https://huggingface.co/spaces/airblackbox/air-blackbox-scanner" target="_blank">HuggingFace Demo</a>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp/blob/main/benchmarks/REAL_WORLD_COMPLIANCE_REPORT.md" target="_blank">Full Scan Report</a>
+            </div>
+            <div class="footer-section">
+                <h3>Documentation</h3>
+                <a href="#" target="_blank">Getting Started</a>
+                <a href="#" target="_blank">API Reference</a>
+                <a href="#" target="_blank">CLI Guide</a>
+                <a href="#" target="_blank">FAQ</a>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <a href="#" target="_blank">EU AI Act Overview</a>
+                <a href="#" target="_blank">Compliance Guide</a>
+                <a href="#" target="_blank">License (Apache 2.0)</a>
+                <a href="#" target="_blank">Privacy Policy</a>
+            </div>
+            <div class="footer-section">
+                <h3>Community</h3>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank">Contribute</a>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank">Issues</a>
+                <a href="https://github.com/air-blackbox/air-blackbox-mcp" target="_blank">Discussions</a>
+                <a href="#" target="_blank">Contact</a>
+            </div>
         </div>
-        <div class="cta-fine">
-            Non-compliance fines: up to <strong>&#8364;35 million</strong> or <strong>7% of global annual turnover</strong>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AIR Blackbox. Open-source EU AI Act compliance scanner for Python AI agents. Made with care for developers building responsibly.</p>
         </div>
-    </div>
-</section>
+    </footer>
 
-<!-- Footer -->
-<footer>
-    <div class="container">
-        <div class="footer-links">
-            <a href="https://github.com/airblackbox" target="_blank">GitHub</a>
-            <a href="https://pypi.org/search/?q=air+blackbox" target="_blank">PyPI</a>
-            <a href="mailto:jason@airblackbox.ai">Contact</a>
-            <a href="https://github.com/airblackbox/air-compliance-checker" target="_blank">Documentation</a>
-        </div>
-        <div class="footer-copy">Apache 2.0 &middot; Built on OpenTelemetry &middot; &copy; 2026 AIR Blackbox</div>
-    </div>
-</footer>
+    <script>
+        function copyToClipboard(element) {
+            const text = element.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = element.textContent;
+                element.textContent = '✓ Copied!';
+                element.style.color = '#10b981';
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.style.color = '#3b82f6';
+                }, 2000);
+            });
+        }
 
-<script>
-    // Countdown to August 2, 2026
-    function updateCountdown() {
-        const target = new Date('2026-08-02T00:00:00Z');
-        const now = new Date();
-        const diff = target - now;
-        if (diff <= 0) return;
-        const d = Math.floor(diff / 86400000);
-        const h = Math.floor((diff % 86400000) / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        document.getElementById('cd-days').textContent = d;
-        document.getElementById('cd-hours').textContent = String(h).padStart(2, '0');
-        document.getElementById('cd-mins').textContent = String(m).padStart(2, '0');
-        document.getElementById('cd-secs').textContent = String(s).padStart(2, '0');
-    }
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
-    // Copy MCP command
-    function copyMcp(el) {
-        navigator.clipboard.writeText('pip install air-blackbox-mcp').then(() => {
-            const btn = el.querySelector('.copy-btn');
-            btn.textContent = 'Copied!';
-            setTimeout(() => btn.textContent = 'Copy', 2000);
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
-    }
-
-    // Copy scanner command
-    function copyCmd(el) {
-        const text = 'pip install air-compliance && air-compliance scan ./my-project';
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = el.querySelector('.copy-btn');
-            btn.textContent = 'Copied!';
-            setTimeout(() => btn.textContent = 'Copy', 2000);
-        });
-    }
-
-    // Code tabs
-    function showTab(name) {
-        document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('panel-' + name).classList.add('active');
-        event.target.classList.add('active');
-    }
-
-    // Email form
-    const emailForm = document.getElementById('email-form');
-    if (emailForm) {
-        emailForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const data = new FormData(emailForm);
-            fetch(emailForm.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } })
-                .then(r => { if (r.ok) { emailForm.style.display = 'none'; document.getElementById('form-success').style.display = 'block'; } });
-        });
-    }
-
-    // Smooth scroll
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-        a.addEventListener('click', e => {
-            e.preventDefault();
-            const target = document.querySelector(a.getAttribute('href'));
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-        });
-    });
-</script>
-
-<!-- Vercel Web Analytics -->
-<script defer src="/_vercel/insights/script.js"></script>
-<!-- Vercel Speed Insights -->
-<script defer src="/_vercel/speed-insights/script.js"></script>
-<script>
-// Close dropdown when clicking outside
-document.addEventListener('click', e => {
-    const dd = document.getElementById('nav-dd');
-    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
-});
-</script>
+    </script>
 </body>
 </html>
